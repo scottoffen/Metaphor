@@ -5,7 +5,7 @@ A set of Perl modules that provide a simple and consistent interface to commonly
 
 While not required, the modules are designed to assist you with building [Swagger](https://github.com/wordnik/swagger-ui) compliant resource listings and api declarations for use with the standalone Swagger-UI.
 
-See the wiki for module documentation, tutorials and cookbooks!
+See the [updated-with-every-build wiki](https://github.com/scottoffen/Common-Perl/wiki) for module documentation, tutorials and cookbooks!
 
 
 ## License
