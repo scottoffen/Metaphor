@@ -3,14 +3,17 @@ Common-Perl
 
 A set of Perl modules that provide a simple and consistent interface to commonly needed functionality when building a web application. The main focus is to provide classes and functions that allow you to easily write and maintain RESTful services that interact with a MySQL database. The library also contain modules that are of more general use in data creation and validation.
 
+While not required, the modules are designed to assist you with building [Swagger](https://github.com/wordnik/swagger-ui) compliant resource listings and api declarations for use with the standalone Swagger-UI.
 
-License
-=======
+See the wiki for module documentation, tutorials and cookbooks!
+
+
+## License
 
 Copyright 2011-2014 Scott Offen
 
 Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
+you may not use these files except in compliance with the License.
 You may obtain a copy of the License at [apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software
