@@ -39,6 +39,15 @@ our $VERSION = '1.0.0.0';
 		IsCreditCard
 		CompareString
 	);
+
+	our @EXPORT_OK = @EXPORT;
+
+	our %EXPORT_TAGS =
+	(
+		'generators' => [qw(CreateGuid RandomString RandomNumber)],
+		'formatters' => [qw(TrimString FormatPhone)],
+		'validators' => [qw(IsGuid IsEmail IsBool IsNumber IsNumberInRange IsPhone IsIPAddress IsPostalCode IsCreditCard)],
+	);
 #----------------------------------------------------------------------------------#
 
 
@@ -64,7 +73,7 @@ sub CreateGuid
 #----------------------------------------------------------------------------------#
 sub RandomString
 {
-	my $length = shift;
+	my $length = shift || 10;
 	my @chars  = ('A'..'Z','0'..'9');
 
 	my $result;
@@ -105,8 +114,8 @@ sub TrimString
 {
 	my $value = shift;
 
-	$value =~ s/^\s//;
-	$value =~ s/\s$//;
+	$value =~ s/^\s+//;
+	$value =~ s/\s+$//;
 
 	return $value;
 }
@@ -178,6 +187,13 @@ sub IsIPAddress
 	{
 		if ($value =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/i)
 		{
+			my @octets = split('\.', $value);
+
+			foreach my $octet (@octets)
+			{
+				return 0 if ($octet > 255);
+			}
+
 			return 1;
 		}
 	}
@@ -244,7 +260,7 @@ sub IsNumber
 
 	if (defined $value)
 	{
-		if ($value =~ /^\-?\d+\.?\d*$/)
+		if ($value =~ /^[\-\+]?\d+\.?\d*$/)
 		{
 			return 1;
 		}
@@ -293,7 +309,7 @@ sub IsPostalCode
 
 	if (defined $value)
 	{
-		if (($value =~ /^\d{5}(\-?\d{4})?$/) || (uc($value) =~ /^[A..Z]\d[A..Z]\s?\d[A..Z]\d]$/))
+		if (($value =~ /^\d{5}(\-?\d{4})?$/) || ($value =~ /^[A-Z]\d[A-Z]\d[A-Z]\d$/i))
 		{
 			return 1;
 		}
@@ -343,3 +359,180 @@ sub CompareString
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::Util - All kinds of fun little utility methods that get used all the freaking time!
+
+=head1 SYNOPSIS
+
+    use Common::Util; # All of the methods below are exported by default
+
+    use Common::Util(':generators'); # Only exports generators
+    use Common::Util(':formatters'); # Only exports formatters
+    use Common::Util(':validators'); # Only exports validators
+
+    #----- G E N E R A T O R S -----#
+
+    # Generates a pseudo-guid
+    my $guid = CreateGuid();
+
+    # Generates a random string of 10 alphanumeric characters
+    my $random = RandomString(10);
+
+    # Generates a random number between 2 and 11
+    my $randnum = RandomNumber(10, 2);
+
+
+    #----- F O R M A T T E R S -----#
+
+    # Removes all white space before and after a string
+    my $trimmed = TrimString("  	trimmed	  ");
+
+    # Formats a phone number: (888) 999-1212
+    my $phone1 = FormatPhone("888-999-1212");
+    my $phone2 = FormatPhone("888.999.1212");
+    my $phone3 = FormatPhone("888.999-1212");
+    my $phone4 = FormatPhone(8889991212);
+
+
+    #----- V A L I D A T O R S -----#
+
+    IsGuid('foo');                                  # false
+    IsGuid('09EAB114-C555-0465-6139-664515425218'); # true
+
+    IsEmail('foo');                                 # false
+    IsEmail('user@domain.com');                     # true
+
+    IsBool(1);                                      # true
+    IsBool(0);                                      # true
+    IsBool('x');                                    # false
+
+    IsNumber(1);                                    # true
+    IsNumber("1");                                  # true
+    IsNumber(1.003);                                # true
+    IsNumber(+5.6);                                 # true
+    IsNumber(-22);                                  # true
+    IsNumber('1.z');                                # false
+
+    IsNumberInRange(100,1,100);                     # true
+    IsNumberInRange(50,1,100);                      # true
+    IsNumberInRange(1,1,100);                       # true
+    IsNumberInRange(100,1,50);                      # false
+    IsNumberInRange(100,50,1);                      # false
+
+    IsPhone(5552323);                               # false
+    IsPhone(222555444);                             # false
+    IsPhone(2225558887);                            # 2225558887 (true)
+    IsPhone('(222) 555-8887');                      # 2225558887 (true)
+
+    IsIPAddress('1.0.0.0');                         # true
+    IsIPAddress('255.255.255.255');                 # true
+    IsIPAddress('255.255.255.256');                 # false
+    IsIPAddress('255.a.255.256');                   # false
+
+    IsPostalCode('20500');                          # true
+    IsPostalCode('20500-1234');                     # true
+    IsPostalCode('K1A1B1');                         # true (Canadian)
+
+    IsCreditCard(12345678901234);                   # false
+    IsCreditCard(123456789012345);                  # true
+    IsCreditCard(1234567890123456);                 # true
+    IsCreditCard(12345678901234567);                # false
+
+    CompareString('adam', 'beth');                  # -1
+    CompareString('beth', 'adam');                  # 1
+    CompareString('adam', 'adam');                  # 0
+
+=head1 DESCRIPTION
+
+An assortment of common helper methods for generating, formatting, and validating data.
+
+=head2 Methods
+
+Only public methods are documented.
+
+=over 12
+
+
+=item C<CompareString(STRINGA, STRINGB)>
+
+Returns: (1) if STRINGB  is greater than STRINGA, (0) if STRINGA equals STRINGB or (-1) if STRINGA is greater than STRINGB.
+
+=item C<CreateGuid()>
+
+Returns a pseudo-guid as a 36 character string.
+
+=item C<FormatPhone(PHONE_NUMBER)>
+
+Attempts to formatt PHONE_NUMBER I<(888) 888-8888> and return the formatted string. At worst, returns the value passed in stripped of non-digit characters.
+
+=item C<IsBool(VALUE)>
+
+Returns (1) if the value passed in is a 1 or a 0, otherwise returns (0).
+
+=item C<IsCreditCard(VALUE)>
+
+Returns (1) if the value passed in is 15 or 16 digits long, otherwise returns (0).
+
+=item C<IsEmail(VALUE)>
+
+Returns (1) if the value passed in matches the internal email regular expression, otherwise returns (0).
+
+=item C<IsGuid(VALUE)>
+
+Returns (1) if the value passed in is a 36 character guid, otherwise returns (0).
+
+See I<CreateGuid>.
+
+=item C<IsIPAddress(VALUE)>
+
+Returns (1) if the value passed in is an IPv4 address in the range of I<0.0.0.0> to I<255.255.255.255>, otherwise returns (0).
+
+=item C<IsNumber(VALUE)>
+
+Returns (1) if the value passed in is number-ish, otherwise returns (0).  Takes into consideration positive and negative signs and decimal values.
+
+=item C<IsNumberInRange(VALUE, MIN, MAX)>
+
+Returns (1) if the value passed in is between min and max (inclusive), otherwise returns (0).
+
+=item C<IsPhone(VALUE)>
+
+Returns the value passed in stripped of all non-digit characters if it contains at least 10 digits, otherwise returns (0).
+
+=item C<IsPostalCode(VALUE)>
+
+Returns (1) if the value passed in is formatted like an American (nnnnn or nnnnn-nnnn) or Canadian (xnx nxn or xnxnxn) postal code, otherwise returns (0).
+
+=item C<RandomNumber(RANGE [, OFFSET])>
+
+Returns a random number between 0 and RANGE, adds optional OFFSET to value before returning it.
+
+=item C<RandomString([LENGTH])>
+
+Returns a random alpha-numeric string of LENGTH length (which defaults to 10 if not provided).
+
+=item C<TrimString(VALUE)>
+
+Returns the value after removing extra leading and trailing whitespace.
+
+=back
+
+=head1 TODO
+
+Implement the L<Luhn algorithm|http://en.wikipedia.org/wiki/Luhn_algorithm> in IsCreditCard method.
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+None
+
+=cut
