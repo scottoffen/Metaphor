@@ -15,7 +15,7 @@ our $VERSION = '1.0.0.0';
 BEGIN
 {
 	# If you are developing locally and running from the command line, define this
-	$ENV{'HTTP_HOST'} = "www.robotscott.com:587" unless (defined $ENV{'HTTP_HOST'});
+	#$ENV{'HTTP_HOST'} = "www.robotscott.com:587" unless (defined $ENV{'HTTP_HOST'});
 }
 #----------------------------------------------------------------------------------#
 
@@ -152,10 +152,10 @@ sub AddAccount
 
 
 
-#################################|     Attach     |#################################
+###############################|     AttachFile     |###############################
 # Private                                                                          #
 #----------------------------------------------------------------------------------#
-sub Attach
+sub AttachFile
 {
 	my ($attach) = @_;
 
@@ -165,7 +165,7 @@ sub Attach
 		{
 			my $disposition = (defined $attach->{disposition}) ? $attach->{disposition} : 'attachment';
 			my $filename    = (defined $attach->{filename}) ? $attach->{filename} : GetFileName($attach->{file});
-			my $modified    = CurrentDate((stat($attach->{file}))[9]);
+			my $modified    = FormatDate((stat($attach->{file}))[9]);
 
 			my @attachment = ();
 			push(@attachment, "Content-ID: <" . $attach->{id} . ">") if (defined $attach->{id});
@@ -184,14 +184,55 @@ sub Attach
 
 
 
+###############################|     AttachHtml     |###############################
+# Private                                                                          #
+#----------------------------------------------------------------------------------#
+sub AttachHtml
+{
+	my ($html, $charset) = @_;
+
+	my @attachment =
+	(
+		"Content-Transfer-Encoding: quoted-printable",
+		"Content-type: text/html; charset=\"$charset\"\n",
+		$html
+	);
+
+	return join("\n", @attachment);
+}
+#########################################||#########################################
+
+
+
+###############################|     AttachText     |###############################
+# Private                                                                          #
+#----------------------------------------------------------------------------------#
+sub AttachText
+{
+	my ($text, $charset) = @_;
+
+	my @attachment =
+	(
+		"Content-Transfer-Encoding: quoted-printable",
+		"Content-type: text/plain; charset=\"$charset\"\n",
+		$text
+	);
+
+	return join("\n", @attachment);
+}
+#########################################||#########################################
+
+
+
 ################################|     Boundary     |################################
 # Private                                                                          #
+# 0 : Optional, length of boundary string                                          #
 #----------------------------------------------------------------------------------#
 sub Boundary
 {
 	my $length     = ((@_) && ($_[0] =~ /^\d{1,2}$/)) ? shift : 20;
 	my $result     = "=_NextPart_";
-	my $characters = ".=_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	my $characters = ".=_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ()+:?";
 
 	until (length $result == $length)
 	{
@@ -238,11 +279,11 @@ sub Connect
 
 
 
-##############################|     CurrentDate     |###############################
+###############################|     FormatDate     |###############################
 # Private                                                                          #
 # 0 : Optional, unix timestamp                                                     #
 #----------------------------------------------------------------------------------#
-sub CurrentDate
+sub FormatDate
 {
 	my $time = ((scalar @_ > 0) && ($_[0] =~ /^\d+$/)) ? shift : time();
 
@@ -266,7 +307,7 @@ sub FormattAddresses
 {
 	my ($list) = @_;
 	return "" unless (($list) && (ref $list eq 'HASH'));
-	return join("; ", map { $list->{$_} . " <$_>" } keys %$list);
+	return join("; ", map { "\"" . $list->{$_} . "\" <$_>" } keys %$list);
 }
 #########################################||#########################################
 
@@ -369,181 +410,128 @@ sub SendEmail
 
 	if ($account)
 	{
-		my ($headers, $content);
+		my ($headers, $content, $message);
 
-		my $defaults = { 'X-Auto-Response-Suppress' => 'DR, RN, NRN, OOF, AutoReply', 'Mime-Version' => '1.0', 'Date' => CurrentDate() };
+		my $defaults = { 'X-Auto-Response-Suppress' => 'DR, RN, NRN, OOF, AutoReply', 'Mime-Version' => '1.0', 'Date' => FormatDate() };
 		my $charset  = (defined $params->{charset}) ? $params->{charset} : "iso-8859-1";
-		my $boundary = Boundary();
+		my $smtp     = $account->{smtp};
 
 		#----------------------------------------------------------------------------------#
-		# Generate headers                                                                 #
-		#----------------------------------------------------------------------------------#
-		$headers = ((defined $params->{headers}) && (ref $params->{headers} eq 'HASH')) ? $params->{headers} : {};
-		foreach my $key (keys %$defaults)
-		{
-			$headers->{$key} = $defaults->{$key} unless (defined $headers->{$key});
-		}
-		#----------------------------------------------------------------------------------#
-
-
-		#----------------------------------------------------------------------------------#
-		# From                                                                             #
-		#----------------------------------------------------------------------------------#
-		my $smtp = $account->{smtp};
-		if ($smtp->mail($account->{address}))
-		{
-			$headers->{'From'} = $account->{name} . '<' . $account->{address} . '>';
-		}
-		else
-		{
-			WARN("Can't send from " . $account->{address} . " : $!");
-			return undef;
-		}
-		#----------------------------------------------------------------------------------#
-
-
-		#----------------------------------------------------------------------------------#
-		# To, CC and BCC                                                                   #
-		#----------------------------------------------------------------------------------#
-		my $to  = VerifyAddresses($params->{to});
-		my $cc  = VerifyAddresses($params->{cc});
-		my $bcc = VerifyAddresses($params->{bcc});
-
-		if (!($smtp->recipient(MergeRecipients($to, $cc, $bcc))))
-		{
-			WARN ("Unable to set email recipients : $!");
-			return undef;
-		}
-
-		$headers->{'To'} = FormattAddresses($to);
-		$headers->{'Cc'} = FormattAddresses($cc) if (scalar keys %$cc > 0);
-		#----------------------------------------------------------------------------------#
-
-
-		#----------------------------------------------------------------------------------#
-		# Subject                                                                          #
-		#----------------------------------------------------------------------------------#
-		$headers->{'Subject'} = (defined $params->{subject}) ? $params->{subject} : "[no subject]";
-		$headers->{'Subject'} = encode('MIME-Header', $headers->{'Subject'});
-		#----------------------------------------------------------------------------------#
-
-
-		#----------------------------------------------------------------------------------#
-		# Message                                                                          #
+		# Headers                                                                          #
 		#----------------------------------------------------------------------------------#
 		{
-			my @content = ();
-
 			#----------------------------------------------------------------------------------#
-			# Email with attachments                                                           #
+			# Defaults                                                                         #
 			#----------------------------------------------------------------------------------#
-			if ((defined $params->{attach}) && (ref $params->{attach} eq 'ARRAY') && (scalar @{$params->{attach}} > 0))
+			$headers = ((defined $params->{headers}) && (ref $params->{headers} eq 'HASH')) ? $params->{headers} : {};
+			foreach my $key (keys %$defaults)
 			{
-				$headers->{'Content-type'} = "multipart/mixed\; boundary=\"$boundary\"";
-				push (@content, "This is a MIME encoded message.\n");
-
-				#----------------------------------------------------------------------------------#
-				# Embedd the multipart here                                                        #
-				#----------------------------------------------------------------------------------#
-				if ((defined $params->{text}) || (defined $params->{html}))
-				{
-					my $innerboundary = Boundary();
-
-					push (@content, "\n\n--$boundary");
-					push (@content, "Content-Type: multipart/alternative; boundary=\"$innerboundary\"");
-
-					#----------------------------------------------------------------------------------#
-					# Add optional text part                                                           #
-					#----------------------------------------------------------------------------------#
-					if (defined $params->{text})
-					{
-						push (@content, "\n\n--$innerboundary");
-						push (@content, "Content-type: text/plain");
-						# push (@content, "Content-type: text/plain; charset=\"$charset\"");
-						# push (@content, "Content-Transfer-Encoding: quoted-printable\n");
-						push (@content, $params->{text});
-					}
-					#----------------------------------------------------------------------------------#
-
-
-					#----------------------------------------------------------------------------------#
-					# Add optional html part                                                           #
-					#----------------------------------------------------------------------------------#
-					if (defined $params->{html})
-					{
-						push (@content, "\n\n--$innerboundary");
-						push (@content, "Content-Type: text/html; charset=\"$charset\"");
-						# push (@content, "Content-Transfer-Encoding: quoted-printable\n");
-						push (@content, $params->{html});
-					}
-					#----------------------------------------------------------------------------------#
-
-					push (@content, "\n\n--$innerboundary--");
-				}
-				#----------------------------------------------------------------------------------#
-
-
-				#----------------------------------------------------------------------------------#
-				# Add attachments                                                                  #
-				#----------------------------------------------------------------------------------#
-				foreach my $attachment (@{$params->{attach}})
-				{
-					$attachment = Attach($attachment);
-					if ($attachment)
-					{
-						push (@content, "\n\n--$boundary");
-						push (@content, $attachment);
-					}
-				}
-				#----------------------------------------------------------------------------------#
-
-				push (@content, "\n\n--$boundary--");
+				$headers->{$key} = $defaults->{$key} unless (defined $headers->{$key});
 			}
 			#----------------------------------------------------------------------------------#
 
 
 			#----------------------------------------------------------------------------------#
-			# Html with optional text email                                                    #
+			# From                                                                             #
 			#----------------------------------------------------------------------------------#
-			elsif (defined $params->{html})
+			if ($smtp->mail($account->{address}))
 			{
-				if (defined $params->{text})
-				{
-					$headers->{'Content-type'} = "multipart/alternative\; boundary=\"$boundary\"";
-
-					push (@content, "This is a MIME encoded message.");
-					push (@content, "\n\n--$boundary");
-					push (@content, "Content-type: text/plain; charset=\"$charset\"");
-					push (@content, "Content-Transfer-Encoding: quoted-printable\n");
-					push (@content, $params->{text});
-					push (@content, "\n\n--$boundary");
-					push (@content, "Content-Type: text/html; charset=\"$charset\"\n");
-					push (@content, $params->{html});
-					push (@content, "\n\n--$boundary--");
-				}
-				else
-				{
-					$headers->{'Content-type'} = "text/html; charset=\"$charset\"";
-					push (@content, $params->{html});
-				}
+				$headers->{'From'} = $account->{name} . '<' . $account->{address} . '>';
 			}
-			#----------------------------------------------------------------------------------#
-
-
-			#----------------------------------------------------------------------------------#
-			# Text Only Email                                                                  #
-			#----------------------------------------------------------------------------------#
 			else
 			{
-				$headers->{'Content-type'} = "text/plain; charset=\"$charset\"";
-				$headers->{'Content-Transfer-Encoding'} = "quoted-printable";
-
-				push (@content, (defined $params->{text}) ? $params->{text} : "");
+				WARN("Can't send from " . $account->{address} . " : $!");
+				return undef;
 			}
 			#----------------------------------------------------------------------------------#
 
-			$content = join("\n", @content);
+
+			#----------------------------------------------------------------------------------#
+			# To, CC and BCC                                                                   #
+			#----------------------------------------------------------------------------------#
+			my $to  = VerifyAddresses($params->{to});
+			my $cc  = VerifyAddresses($params->{cc});
+			my $bcc = VerifyAddresses($params->{bcc});
+
+			if (!($smtp->recipient(MergeRecipients($to, $cc, $bcc))))
+			{
+				WARN ("Unable to set email recipients : $!");
+				return undef;
+			}
+
+			$headers->{'To'} = FormattAddresses($to);
+			$headers->{'Cc'} = FormattAddresses($cc) if (scalar keys %$cc > 0);
+			#----------------------------------------------------------------------------------#
+
+
+			#----------------------------------------------------------------------------------#
+			# Subject                                                                          #
+			#----------------------------------------------------------------------------------#
+			$headers->{'Subject'} = (defined $params->{subject}) ? $params->{subject} : "[no subject]";
+			$headers->{'Subject'} = encode('MIME-Header', $headers->{'Subject'});
+			#----------------------------------------------------------------------------------#
+
 			$headers = join("\n", map { "$_: " . $headers->{$_} } keys %$headers);
+		}
+		#----------------------------------------------------------------------------------#
+
+
+		#----------------------------------------------------------------------------------#
+		# Content                                                                          #
+		#----------------------------------------------------------------------------------#
+		{
+			#----------------------------------------------------------------------------------#
+			# Create message parts                                                             #
+			#----------------------------------------------------------------------------------#
+			my $text  = (defined $params->{text}) ? AttachText($params->{text}, $charset) : AttachText("", $charset);
+			my $html  = (defined $params->{html}) ? AttachHtml($params->{html}, $charset) : undef;
+			my $files = undef;
+			{
+				if ((defined $params->{attach}) && (ref $params->{attach} eq 'ARRAY') && (scalar @{$params->{attach}} > 0))
+				{
+					$files = [];
+
+					foreach my $attachment (@{$params->{attach}})
+					{
+						$attachment = AttachFile($attachment);
+						push (@$files, $attachment) if ($attachment);
+					}
+				}
+			}
+			#----------------------------------------------------------------------------------#
+
+
+			#----------------------------------------------------------------------------------#
+			# Multipart-Alternative Conversion                                                 #
+			#----------------------------------------------------------------------------------#
+			if (($text) && ($html))
+			{
+				my $boundary = Boundary();
+				$content = join("\n", ("Content-type: multipart/alternative\; boundary=\"$boundary\"\n\n--$boundary", $text, "\n--$boundary", $html, "\n--$boundary--"));
+			}
+			else
+			{
+				$content = $text;
+			}
+			#----------------------------------------------------------------------------------#
+
+
+			#----------------------------------------------------------------------------------#
+			# Multipart-Mixed Conversion                                                       #
+			#----------------------------------------------------------------------------------#
+			if (($files) && (scalar @$files > 0))
+			{
+				my $boundary = Boundary(21);
+				$content = "Content-Type: multipart/mixed; boundary=\"$boundary\"\n\n--$boundary\n$content\n";
+
+				foreach my $file (@$files)
+				{
+					$content .= "\n--$boundary\n$file\n";
+				}
+
+				$content .= "\n--$boundary--\n";
+			}
+			#----------------------------------------------------------------------------------#
 		}
 		#----------------------------------------------------------------------------------#
 
@@ -551,20 +539,23 @@ sub SendEmail
 		#----------------------------------------------------------------------------------#
 		# Send email                                                                       #
 		#----------------------------------------------------------------------------------#
-		if ($smtp->data())
 		{
-			$smtp->datasend($headers);
-			$smtp->datasend("\n\n");
-			$smtp->datasend($content);
-			$smtp->dataend();
-		}
-		else
-		{
-			WARN("SMTP refused data : $!");
-			return undef;
+			$message = join("\n", $headers, $content);
+
+			if ($smtp->data())
+			{
+				$smtp->datasend($message);
+				$smtp->dataend();
+			}
+			else
+			{
+				WARN("SMTP refused data : $!");
+				return undef;
+			}
 		}
 		#----------------------------------------------------------------------------------#
 
+		print "\n$message\n\n";
 		return 1;
 	}
 
