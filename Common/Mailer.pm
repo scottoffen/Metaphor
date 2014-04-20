@@ -14,8 +14,6 @@ our $VERSION = '1.0.0.0';
 #----------------------------------------------------------------------------------#
 BEGIN
 {
-	# If you are developing locally and running from the command line, define this
-	#$ENV{'HTTP_HOST'} = "www.robotscott.com:587" unless (defined $ENV{'HTTP_HOST'});
 }
 #----------------------------------------------------------------------------------#
 
@@ -41,22 +39,26 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT   = qw(SendText SendEmail);
-	our $MAILER   = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
-	our $LISTS    = $MAILER->{"lists"}      || {};
-	our $KEY      = '_SMTP';
-	our $ACCOUNTS = {};
-	our $DEF      = undef;
+	our @EXPORT    = qw(SendText SendEmail);
+	our @EXPORT_OK = @EXPORT;
+	our $MAILER    = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
+	our $LISTS     = $MAILER->{"lists"}      || {};
+	our $KEY       = '_SMTP';
+	our $ACCOUNTS  = {};
+	our $DEFAULT   = undef;
 
 
 	#----------------------------------------------------------------------------------#
 	# Create default host                                                              #
 	#----------------------------------------------------------------------------------#
-	our $HOST   = do
+	our $HOST = undef;
 	{
-		my @httphost = split(/\./, $1) if ($ENV{'HTTP_HOST'} =~ /^(.+)$/i);
-		join(".", ("mail", $httphost[-2], $httphost[-1]));
-	};
+		if (defined $ENV{'HTTP_HOST'})
+		{
+			my @httphost = split(/\./, $1) if ($ENV{'HTTP_HOST'} =~ /^(.+)$/i);
+			$HOST = join(".", ("mail", $httphost[-2], $httphost[-1]));
+		}
+	}
 	#----------------------------------------------------------------------------------#
 
 
@@ -80,7 +82,7 @@ BEGIN
 			Common::Mailer->AddAccount($account);
 		}
 
-		$DEF = $default if (($default) && (exists $ACCOUNTS->{$default}));
+		$DEFAULT = $default if (($default) && (exists $ACCOUNTS->{$default}));
 	}
 	#----------------------------------------------------------------------------------#
 
@@ -323,7 +325,7 @@ sub GetConnection
 	#----------------------------------------------------------------------------------#
 	my $label = undef;
 	{
-		my $val = $_[0] || $DEF;
+		my $val = $_[0] || $DEFAULT;
 		if (defined $val)
 		{
 			if ((ref $val eq 'HASH'))
@@ -555,7 +557,8 @@ sub SendEmail
 		}
 		#----------------------------------------------------------------------------------#
 
-		print "\n$message\n\n";
+		# print "\n$message\n";
+
 		return 1;
 	}
 
@@ -566,9 +569,30 @@ sub SendEmail
 
 
 ################################|     SendText     |################################
-# sub SendText
-# {	
-# }
+# Exported                                                                         #
+#----------------------------------------------------------------------------------#
+sub SendText
+{
+	my ($params) = @_;
+
+	if (($params) && (ref $params eq 'HASH'))
+	{
+		my $text =
+		{
+			subject => '',
+			from    => (defined $params->{from}) ? $params->{from} : $DEFAULT,
+			to      => (defined $params->{to})   ? $params->{to}   : undef,
+			text    => (defined $params->{text}) ? $params->{text} : undef
+		};
+
+		if ((defined $text->{to}) && (defined $text->{text}))
+		{
+			return SendEmail($text);
+		}
+	}
+
+	return undef;
+}
 #########################################||#########################################
 
 
