@@ -1,8 +1,11 @@
-![](https://raw.github.com/scottoffen/Common-Perl/master/common-perl.png) Common-Perl
+Common-Perl
 ===========
 
+![](https://raw.github.com/scottoffen/Common-Perl/master/common-perl.png)
 
-A set of Perl modules that provide a simple and consistent interface to commonly needed functionality when building a web application. The main focus is to provide classes and functions that allow you to easily write and maintain RESTful services that interact with a MySQL database. The library also contain modules that are of more general use in logging, emailing and data creation and validation.
+**Current Version: Pre-release**
+
+A set of Perl modules using the Common namespace that provide a simple and consistent interface to commonly needed functionality when building a web application. The main focus is to provide classes and functions that allow you to easily write and maintain RESTful services that interact with a MySQL database. The library also contain modules that are of more general use in logging, emailing and data creation and validation.
 
 While not required, the modules are designed to assist you with building [Swagger](https://github.com/wordnik/swagger-spec) compliant resource listings and api declarations for use with the standalone [Swagger-UI](https://github.com/wordnik/swagger-ui).
 
