@@ -217,19 +217,19 @@ sub Fetch
 			}
 			else
 			{
-				if ((scalar @rows > 1) || (wantarray))
+				if (scalar @rows > 1)
 				{
-					return @rows;
+					return (wantarray) ? @rows : \@rows;
 				}
-				elsif (scalar @rows == 1)
+				elsif (scalar @rows > 0)
 				{
-					return $rows[0];
+					return (wantarray) ? @{$rows[0]) : $rows[0];
 				}
 			}
 		}
 		else
 		{
-			WARN("Unable to execute query : ($query), (" . join(", ", @$bindings) . ")");
+			WARN("Connection error : unable to execute query : ($query)");
 		}
 	}
 
@@ -264,7 +264,7 @@ sub GetConnection
 #----------------------------------------------------------------------------------#
 sub GetLastError
 {
-	return pop(@ERRORS);
+	return (scalar @ERRORS > 0) ? pop(@ERRORS) : undef;
 }
 #########################################||#########################################
 
@@ -368,3 +368,158 @@ sub VerifyDbParams
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::Database - Simplifies connecting to a MySQL database and execution of SQL statements.
+
+=head1 SYNOPSIS
+
+In config.json:
+
+ {
+ 	...
+ 	"database" :
+ 	{
+ 		"default" :
+ 		{
+ 			"host"     : "host:port",
+ 			"schema"   : "schema-name",
+ 			"username" : "username",
+ 			"password" : "cGFzc3dvcmQ=",
+ 			"salt"     : "salt"
+ 		}
+ 	}
+ }
+
+In your script:
+
+ use Common::Database; # Exports Fetch, Execute and Salt
+
+ my $id = Common::Database->AddConnection(
+ {
+ 	"host"     => "localhost",
+ 	"schema"   => "my_schema",
+ 	"username" => "myusername",
+ 	"password" => "cGFzc3dvcmQ="
+ });
+
+ Common::Database->SetDefault($id);
+
+ # Execute returns 0 on failure, number of rows affected on success
+ Execute("insert into customers (id, fname, lname), (?, ?)", [1, "Bart", "Simpson"]);
+
+ # Fetch returns an array of array refs
+ my @rows = Fetch("select id, fname, lname from customers");
+
+ # Returns the last error and removes it from the array
+ my $error0 = Common::Database->GetLastError();
+
+ # A different error is returned this time!
+ my $error1 = Common::Database->GetLastError();
+
+=head1 DESCRIPTION
+
+Easily connect to a database using values from your configuration file, or provide credentials on-the-fly. Define a default, or connect to and query multiple databases simultaneously.
+
+Connections are created as needed, so you don't ever need to call any kind of C<Connect()> method.  Created connections are cached, so you won't be reconnecting each time you need to run a query.
+
+=head2 Methods
+
+Only public methods are documented.  Use undocumented methods at your own risk.
+
+=head3 Exported Methods
+
+=over 12
+
+=item C<Execute(QUERY[, BINDINGS, DB])>
+
+ # Execute returns 0 on failure, number of rows affected on success
+ Execute("insert into customers (id, fname, lname), (?, ?)", [1, "Bart", "Simpson"]);
+
+BINDINGS is presumed to be an C<ARRAYREF>.  So, if there is a second parameter, and the second parameters isn't an array ref, the second parameter is assumed to be a database id.  If no DB is specified, the default is used.
+
+Executes the QUERY passed in with the BINDINGS provided using the connection specified by DB.  Returns C<0> on failure, on success it returns the number of rows affected.
+
+Any error produced by the connection and execution of the query can be retrieved via C<GetLastError()>.
+
+=item C<Fetch(QUERY[, BINDINGS, DB])>
+
+ # Fetch returns an array of array refs
+ my @rows = Fetch("select id, fname, lname from customers");
+
+BINDINGS is presumed to be an C<ARRAYREF>.  So, if there is a second parameter, and the second parameters isn't an array ref, the second parameter is assumed to be a database id.  If no DB is specified, the default is used.
+
+Executes the QUERY passed in with the BINDINGS provided using the connection specified by DB.  Returns the results of the query:
+
+1. If there are multiple rows OR if the return value is expected to be an array, an array (or arrayref) of arrayrefs representing each row is returned.
+
+2. If there is only one value AND the return value is not expected to be an array, only a single arrayref is returned, representing the result.
+
+3. If no rows are returned, returns undef.
+
+Any error produced by the connection and execution of the query can be retrieved via C<GetLastError()>.
+
+=item C<Salt([DB])>
+
+Returns the value of C<salt> for the DB specified.  If no DB is specified, it uses the default.  If no C<salt> value exists, returns undef.
+
+=back
+
+=head3 Other Methods
+
+=over 12
+
+=item C<AddConnection(HASHREF)>
+
+ my $id = Common::Database->AddConnection(
+ {
+ 	"id"       => "mydb",
+ 	"salt"     => "sammy",
+ 	"host"     => "localhost",
+ 	"schema"   => "my_schema",
+ 	"username" => "myusername",
+ 	"password" => "cGFzc3dvcmQ="
+ });
+
+If successful, C<$id> should contain the string "mydb".  You can pass this value to either C<RemoveConnection()> or C<SetDefault()> to, respectively, remove the connection or set that connection as the default.
+
+You can also pass C<$id> as the last parameter to C<Fetch()> or C<Execute()> to specify that you want to use that connection instead of the default connection.
+
+Both C<salt> and C<id> are optional parameters in the hashref.  If omitted, an id will be created and returned.
+
+=item C<GetLastError()>
+
+ # Returns the last error and removes it from the array
+ my $error0 = Common::Database->GetLastError();
+
+ # A different error is returned this time!
+ my $error1 = Common::Database->GetLastError();
+
+Pops the last value from the array of database connection and/or execution errors and returns it.  Each consecutive call will return a different value (or no value, if there are no errors in the array).
+
+Only connection errors are automatically logged (via C<Common::Logging> using C<WARN()>).
+
+=item C<RemoveConnection(DB)>
+
+Removes the connection specified by DB - unless it is the default!
+
+=item C<SetDefault(DB)>
+
+If DB is an id that refers to a connection configuration, that connection configuration is now the default, and will be used in all calls to C<Fetch()> and C<Execute()> when a DB is not provided.
+
+=back
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config> and L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+
+=cut

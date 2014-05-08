@@ -28,7 +28,7 @@ our $VERSION = '0.9';
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
 	our @EXPORT     = qw(FATAL ERROR WARN INFO DEBUG TRACE);
-	our $LOGDIR     = GetConfig()->{'logging'}->{'dir'};
+	our $LOGDIR     = (GetConfig()->{'logging'}) ? GetConfig()->{'logging'}->{'dir'} : undef;
 	our $CONSOLE    = 0;
 	our $KEY        = '_LOGGERS';
 	our $FORMATTERS =
@@ -372,12 +372,13 @@ sub StartLog
 	$ENV{$KEY}  = {} unless (defined $ENV{$KEY});
 
 	my $class   = shift();
-	my $params  = ((@_) && (ref $_[0] eq 'HASH')) ? shift : undef;
+	my $params  = ((@_) && (ref $_[0] eq 'HASH')) ? shift : {};
+	my $logdir  = (defined $params->{path}) ? $params->{path} : (defined $LOGDIR) ? $LOGDIR : undef;
 	my $error   = "!Log path undefined";
 
-	if ($LOGDIR)
+	if ($logdir)
 	{
-		$error = CreateFolder($LOGDIR);
+		$error = CreateFolder($logdir);
 
 		unless ($error =~ /^!/)
 		{
@@ -387,12 +388,11 @@ sub StartLog
 			$tfile = ($tfile) ? $tfile . ".txt" : "temp.txt";
 
 			$params->{'file'}    = $tfile unless (defined $params->{'file'});
-			$params->{'path'}    = join('/', ($LOGDIR, $params->{'file'})) unless (defined $params->{'path'});
+			$params->{'path'}    = join('/', ($logdir, $params->{'file'}));
 			$params->{'level'}   = 'ALL' unless (defined $params->{'level'});
 			$params->{'level'}   = $LEVELS->{$params->{'level'}} unless ($params->{'level'} =~ /^\d+$/);
 
 			return $params->{'path'} if (exists $ENV{$KEY}->{$params->{'path'}});
-
 
 			$params->{'fh'} = new FileHandle(">> " . $params->{'path'}) || ($error = "!" . $!);
 
@@ -430,3 +430,154 @@ sub StopLog
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::Logging - Common logging API
+
+=head1 SYNOPSIS
+
+In config.json:
+
+ {
+ 	...
+ 	"logging" :
+ 	{
+ 		"dir" : "/path/to/log/dir"
+ 	}
+ }
+
+This entry is encouraged, but optional, as you can always override it when starting a logger.
+
+In your script:
+
+ use Common::Logging; # Exports FATAL ERROR WARN INFO DEBUG TRACE
+
+ # Turns on console output
+ Common::Logging->ConsoleOn();
+
+ # Start some loggers
+ my $logger1 = Common::Logging->StartLog({ file => "log1.txt", level => "WARN"});
+ my $logger2 = Common::Logging->StartLog({ level => "FATAL"});
+
+ # Logs a warning error message, which will show up in the console
+ # (because it is turned on) and in $logger1, but not $logger2
+ WARN("This is a warning");
+
+ # Stops the logger
+ Common::Logging->StopLog($logger1);
+
+ # Logs a warning error message, which will only up in the console
+ WARN("This is another warning");
+
+=head1 DESCRIPTION
+
+Write error logging in your B<modules> without worrying about whether or not logging is even turned on, or where the lines to log should go!
+
+Configure logging only in B<executeable scripts>, turn it on and off as needed, log to whatever level is required.
+
+=head2 Methods
+
+Only public methods are documented.  Use undocumented methods at your own risk.
+
+=head3 Exported Methods
+
+=over 12
+
+=item C<FATAL(MSG)>, C<ERROR(MSG)>, C<WARN(MSG)>, C<INFO(MSG)>, C<DEBUG(MSG)>, C<TRACE(MSG)>
+
+Writes MSG out to all logs that accept that level of logging. If a log is set to accept message at a given level, all messages of a lower level will also be logged. Log levels are, in order:
+
+=over 4
+
+=item * FATAL (1)
+
+=item * ERROR (2)
+
+=item * WARN (3)
+
+=item * INFO (4)
+
+=item * DEBUG (5)
+
+=item * TRACE (6)
+
+=item * ALL (7, Default)
+
+=back
+
+So if your logger is configured to WARN, ERROR and FATAL messages are also logged, but not INFO, DEBUG or TRACE.
+
+All line breaks (CLRFs) will be removed from MSG. The order of fields written to the log:
+
+=over 4
+
+=item * Date/Time
+
+=item * IP Address (if applicable)
+
+=item * Process Id
+
+=item * Script Name
+
+=item * Package Name
+
+=item * Subroutine
+
+=item * Line Number
+
+=item * Logging Level
+
+=item * MSG
+
+=back
+
+=back
+
+=head3 Other Methods
+
+=over 12
+
+=item C<Console(0|1)>, C<ConsoleOn()>, C<ConsoleOff()>
+
+Methods for turning console output on (C<Console(1)> or C<ConsoleOn()>) or off (C<Console(0)> or C<ConsoleOff()>).
+
+When console output is turned on, every message of every level will be sent to <STDOUT> prior to being logged elsewhere.  You do not need to start a log in order to see console output.
+
+=item C<StartLog(HASHREF)>
+
+Configures a logger using the parameters specified in the C<HASHREF>, returns an id for the specified log (so you can turn it off later).
+
+The C<HASHREF> can contain the following values.  Defaults are specified.
+
+=over 4
+
+=item * file  : The filename for the log. Defaults to the name of the running script + ".txt".  Uses "temp.txt" if the name of the running script cannot be determined.
+
+=item * path  : The path to the directory where the log file should be stored. Defaults to the value specified in your config. If the directory doesn't exists, an attempt will be made to create it.
+
+=item * level : Can be I<FATAL>, I<ERROR>, I<WARN>, I<INFO>, I<DEBUG>, I<TRACE> or I<ALL>. Defaults to I<ALL>.
+
+=back
+
+=item C<StopLog(LogId)>
+
+Stops the log specified by LogId.
+
+All logs are closed nicely when script execution is complete, so it is only necessary to do this when you want to turn off a log during execution.
+
+=back
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config> and L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+
+=cut

@@ -34,19 +34,12 @@ our $VERSION = '0.9';
 #----------------------------------------------------------------------------------#
 sub GetConfig
 {
-	if ((defined $ENV{$KEY}) && (ref $ENV{$KEY} eq 'HASH'))
+	unless ((defined $ENV{$KEY}) && (ref $ENV{$KEY} eq 'HASH'))
 	{
-		return $ENV{$KEY};
+		$ENV{$KEY} = LoadConfig(@_);
 	}
-	else
-	{
-		if (LoadConfig(@_))
-		{
-			return $ENV{$KEY};
-		}
 
-		return {};
-	}
+	return $ENV{$KEY};
 }
 #########################################||#########################################
 
@@ -61,7 +54,7 @@ sub LoadConfig
 
 	$file = Locate($file);
 
-	if (($file) && (-e $file))
+	if ($file)
 	{
 		if ($file =~ /\.xml$/i)
 		{
@@ -73,7 +66,7 @@ sub LoadConfig
 		}
 	}
 
-	return 0;
+	return {};
 }
 #########################################||#########################################
 
@@ -125,7 +118,7 @@ sub Locate
 	{
 		if (-e $file)
 		{
-			$ENV{$KEY} = $file;
+			return $file;
 		}
 		else
 		{
@@ -133,17 +126,70 @@ sub Locate
 			{
 				if (-e join('/', ($location, $file)))
 				{
-					$ENV{$KEY} = join('/', ($location, $file));
-					last;
+					return join('/', ($location, $file));
 				}
 			}
 		}
 	}
 
-	return $ENV{$KEY};
+	return undef;
 }
 #########################################||#########################################
 
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::Config - Locates and loads a JSON or XML configuration file.
+
+=head1 SYNOPSIS
+
+    use Common::Config; # Exports GetConfig and LoadConfig
+
+    my $config1 = GetConfig();
+    my $config2 = LoadConfig("config.xml");
+
+=head1 DESCRIPTION
+
+Sensible defaults allows you to easily include and access a configuration file anywhere in your project.
+
+=head2 Methods
+
+Only public methods are documented.
+
+=over 12
+
+=item C<GetConfig([FILENAME])>
+
+FILENAME is optional.  If omitted, it defaults to 'config.json'.  If specified, it can be an absolute path to a file or a path to a file relative to any path in @INC.
+
+If the FILENAME does not exist, then each path in @INC is searched for the FILENAME, and the first one found will be used.
+
+On first call, loads the file into a hashref using either JSON::PP or XML::SIMPLE (based on the extension).  On subsequent calls - even if a parameter is passed - the cached hashref is returned.
+
+=item C<LoadConfig([FILENAME])>
+
+FILENAME is optional.  If omitted, it defaults to 'config.json'.  If specified, it can be an absolute path to a file or a path to a file relative to any path in @INC.
+
+If the FILENAME does not exist, then each path in @INC is searched for the FILENAME, and the first one found will be used.
+
+Returns the file as a hashref using either JSON::PP or XML::SIMPLE (based on the extension). The hashref is not cached, and so will be read from disk each time.
+
+=back
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+L<JSON::PP|http://search.cpan.org/~makamaka/JSON-PP-2.27203/lib/JSON/PP.pm> and
+L<XML::Simple|http://search.cpan.org/~grantm/XML-Simple-2.20/lib/XML/Simple.pm>
+
+=cut
