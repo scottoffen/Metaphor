@@ -25,6 +25,10 @@ our $VERSION = '0.9';
 #----------------------------------------------------------------------------------#
 	our @EXPORT    = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetListing);
 	our @EXPORT_OK = qw(GetFileAsBase64);
+	our %EXPORT_TAGS =
+	(
+		'all' => [qw(CreateFolder DeleteFolder DownloadFile GetFileName GetListing GetFileAsBase64)]
+	);
 #----------------------------------------------------------------------------------#
 
 
@@ -34,7 +38,7 @@ our $VERSION = '0.9';
 sub CreateFolder
 {
 	my $folder = shift;
-	my (@path, $path, $error);
+	my (@path, $path, $pass);
 
 	#----------------------------------------------------------------------------------#
 	# Immediate returns if there is no folder or if the folder already exists.         #
@@ -76,14 +80,13 @@ sub CreateFolder
 
 		unless (-d $path)
 		{
-			mkdir($path, 0777) || ($error = $!);
+			$pass = mkdir($path, 0777);
+			return $pass unless ($pass);
 		}
-
-		last if ($error);
 	}
 	#----------------------------------------------------------------------------------#
 
-	return ($error) ? $path : "!$error";
+	return $path;
 }
 #########################################||#########################################
 
@@ -135,7 +138,7 @@ sub DeleteFolder
 		}
 		#----------------------------------------------------------------------------------#
 
-		rmdir("$folder");
+		return rmdir("$folder");
 	}
 	#----------------------------------------------------------------------------------#
 }
@@ -241,10 +244,171 @@ sub GetListing
 	}
 	closedir(DIR);
 
-	return $listing;
+	return (wantarray) ? @$listing : $listing;
 }
 #########################################||#########################################
 
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::Storage - Common Storage API
+
+=head1 SYNOPSIS
+
+ # Exports CreateFolder DeleteFolder DownloadFile GetFileName GetListing
+ use Common::Storage;
+
+ # Additionally exports GetFileAsBase64
+ use Common::Storage (':all');
+
+ # Exports just GetFileAsBase64
+ use Common::Storage ('GetFileAsBase64');
+
+ my $folder = "/some/folder/path";
+ my $file   = join("/", ($folder, "file.pdf"));
+
+ # Create a folder at the path specified
+ my $folder = CreateFolder($folder);
+ unless ($folder)
+ {
+	print "Error creating folder : $!";
+ }
+
+ # Get the name of a specific file
+ my $filename = GetFileName($file);
+ print "$filename";
+ > file.pdf
+
+ # Get a directory listing as array or arrayref
+ my @listing = GetListing($folder);
+ my $listing = GetListing($folder);
+
+ # Get a file as Base64
+ my $base64file = GetFileAsBase64($file);
+
+ # Download a file to a browser
+ DownloadFile($file, "myfile.pdf");
+
+ # Delete the folder and everything in it
+ unless (DeleteFolder($folder))
+ {
+	print "Error deleting folder : $!";
+ }
+
+=head1 DESCRIPTION
+
+A utility library for managing stored items.  Includes:
+
+=over 4
+
+=item * Creating and Deleting folders and folders structures
+
+=item * Sending files to a browser for download (not rendering)
+
+=item * Getting a directory listing or a file name based on a path
+
+=item * Base64 encoding a file from a string path
+
+=back
+
+=head2 Methods
+
+Only public methods are documented.  Use undocumented methods at your own risk.
+
+=head3 Exported Methods
+
+=over 12
+
+=item C<CreateFolder(PATH)>
+
+If the folder specified by PATH exists, it returns PATH.  If the folder does not exist, it attempts to create (using mask 0777) the folder - and all parent folders as needed - and returns either the path it was able to create on success or false (0, and sets $! (errno)) on failure.
+
+ my $folder = CreateFolder($folder);
+ unless ($folder)
+ {
+	print "Error creating folder : $!";
+ }
+
+Be aware, however, that a folders existence does not automatically mean that you can read/write to that folder.
+
+=item C<DeleteFolder(PATH)>
+
+Attempts to delete the folder specified by PATH and all files and folders underneath it. Returns true (1) on success and false (0, and sets $! (errno)) on failure.
+
+ unless (DeleteFolder($folder))
+ {
+	print "Error deleting folder : $!";
+ }
+
+=item C<DownloadFile(PATH, FILENAME)>
+
+ # Download a file to a browser
+ DownloadFile($file, "myfile.pdf");
+
+If a file (not a directory) exists at PATH, prints to <STDOUT>:
+
+ Content-Type:application/octet-stream
+ Content-Disposition:attachment;filename=myfile.pdf
+
+ [contents of file.pdf]
+
+If no file exists at PATH, prints to <STDOUT>:
+
+ Content-type: text/html
+
+ File $file not found.
+
+This is a very simple way to download a file as an attachment in response to the execution of a script, and give it any filename you want.
+
+=item C<GetFileName(PATH)>
+
+Returns the part of the path that follows the last path separation character.  It will auto convert C<\\> to C</> in order to do this, but still works on both *NIX and Windows platforms.  If the PATH isn't a file, it returns the last folder specified.
+
+ # Get the name of a specific file
+ my $filename = GetFileName($file);
+ print "$filename";
+ > file.pdf
+
+=item C<GetListing(PATH)>
+
+Returns an array or arrayref of all files in the directory specified by PATH.  It omits any directories, as well as the C<thumbs.db> file.
+
+ # Get a directory listing as array or arrayref
+ my @listing = GetListing($folder);
+ my $listing = GetListing($folder);
+
+=back
+
+=head3 Export OK Methods
+
+=over 12
+
+=item C<GetFileAsBase64(PATH)>
+
+Opens the file located at PATH and returns the Base64 encoded version of it.  Returns C<undef> if there is no file at PATH or if PATH is a directory.
+
+ # Get a file as Base64
+ my $base64file = GetFileAsBase64("/path/to/file.pdf");
+
+=back
+
+=head1 TODO
+
+I might consider rewriting C<CreateFolder> and C<DeleteFolder> using C<File::Path> someday in the distant future, but this method has been working perfectly since long before that module was available to me, so I'm in no hurry to do so.
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+L<MIME::Base64|http://search.cpan.org/~gaas/MIME-Base64-3.14/Base64.pm> and L<Fcntl|http://search.cpan.org/~rjbs/perl-5.18.2/ext/Fcntl/Fcntl.pm>
+
+=cut
