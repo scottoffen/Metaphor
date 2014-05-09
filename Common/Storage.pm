@@ -401,7 +401,7 @@ Opens the file located at PATH and returns the Base64 encoded version of it.  Re
 
 =head1 TODO
 
-I might consider rewriting C<CreateFolder> and C<DeleteFolder> using C<File::Path> someday in the distant future, but this method has been working perfectly since long before that module was available to me, so I'm in no hurry to do so.
+I might consider rewriting C<CreateFolder> and C<DeleteFolder> using C<L<File::Path|http://perldoc.perl.org/File/Path.html>> someday in the distant future, but this method has been working perfectly since long before that module was available to me, so I'm in no hurry to do so.
 
 =head1 AUTHOR
 
