@@ -15,6 +15,7 @@ our $VERSION = '0.9';
 	use strict;
 	use warnings;
 	use Time::HiRes;
+	use Scalar::Util ('blessed');
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -38,6 +39,7 @@ our $VERSION = '0.9';
 		IsPostalCode
 		IsCreditCard
 		CompareString
+		Declassify
 	);
 
 	our @EXPORT_OK = @EXPORT;
@@ -353,6 +355,69 @@ sub CompareString
 	my ($x, $y) = map {lc} @_;
 	return undef unless (($x) && ($y));
 	return ($x gt $y) ? 1 : ($x lt $y) ? -1 : 0;
+}
+#########################################||#########################################
+
+
+
+###############################|     Declassify     |###############################
+# Exported                                                                         #
+# 0  : Array Ref                                                                   #
+# 1+ : Optional: String, Array Ref                                                 #
+#----------------------------------------------------------------------------------#
+sub Declassify
+{
+	my (@skip, @args, $init);
+
+	#----------------------------------------------------------------------------------#
+	# Get the values for @args and @skip, use $init to notify you that @args have been #
+	# found.  Everything is ignored until @args have been found.                       #
+	#----------------------------------------------------------------------------------#
+	foreach my $arg (@_)
+	{
+		if (ref $arg eq 'ARRAY')
+		{
+			my @deref = @$arg;
+
+			if ($init)
+			{
+				push (@skip, @deref);
+			}
+			else
+			{
+				@args = @deref;
+				$init = 1;
+			}
+		}
+		elsif ($init)
+		{
+			push (@skip, $arg);
+		}
+	}
+	#----------------------------------------------------------------------------------#
+
+
+	#----------------------------------------------------------------------------------#
+	# See if the first value is an object or class that should be ignored              #
+	#----------------------------------------------------------------------------------#
+	if ($init)
+	{
+		my $class = blessed($args[0]) || $args[0];
+
+		if ($class->can('isa'))
+		{
+			foreach my $skip (@skip)
+			{
+				return @args if ($class->isa($skip));
+			}
+			shift @args;
+		}
+
+		return @args;
+	}
+	#----------------------------------------------------------------------------------#
+
+	return undef;
 }
 #########################################||#########################################
 
