@@ -32,11 +32,11 @@ use Common::Database;
 use Common::Logging;
 use Common::Mailer;
 use Common::REST;
-use Common::Simplify;
 use Common::Storage;
 use Common::Swagger;
 use Common::Tripcode;
 use Common::Util;
+use Common::Simplify;
 
 
 print "\nDone\n";

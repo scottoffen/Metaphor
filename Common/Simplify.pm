@@ -14,15 +14,7 @@ our $VERSION = '0.9';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
-	use Scalar::Util 'blessed';
-	use base 'Exporter';
-#----------------------------------------------------------------------------------#
-
-
-#----------------------------------------------------------------------------------#
-# Global Variables                                                                 #
-#----------------------------------------------------------------------------------#
-	our @EXPORT = qw(Simplify);
+	use Scalar::Util qw(blessed);
 #----------------------------------------------------------------------------------#
 
 
@@ -132,7 +124,7 @@ sub Simplify
 sub UNMARSHALL
 {
 	my $refed = shift;
-	my $deref = undef;
+	my $deref = (ref $refed) ? undef : $refed;
 
 	#----------------------------------------------------------------------------------#
 	# HASH                                                                             #
@@ -196,3 +188,66 @@ sub UNMARSHALL
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::Simplify - An L<abstract|http://en.wikipedia.org/wiki/Abstract_type> class for common object serialization
+
+=head1 SYNOPSIS
+
+ # In your data access class package
+ use parent qw(Common::Simplify);
+
+ # In your data access class constructor
+ $self->{Fields} = { Id => 1, Label => 1, Url => 1 };
+
+ # In the script that creates an instance of your class
+ my $data = $obj->Simplify();
+
+=head1 DESCRIPTION
+
+C<Simplify> contains a helper method (of the same name) for data serialization. It requires no parameters, but any parameters passed are added to the C<Fields> list described below.
+
+The package that inherits from C<Simplify> should (but is not required to) implement an attribute named C<Fields> that is a hashref (prefered, but could also be an arrayref). Each key in the hashref (or element in the arrayref) should represent either a method that returns a value or another attribute.
+
+The intent of C<Simplify> is to easily add a measure of control to the data serialization process.  It is not intended to do any deserialization.
+
+=head2 Methods
+
+Only public methods are documented.  Use undocumented methods at your own risk.
+
+=over 4
+
+=item C<Simplify()>
+
+When the C<Simplify()> method is called, the C<Fields> list (and any other items passed in as parameters) is traversed. For each element:
+
+=over 1
+
+=item * if a method of that name exists, grab the return value of that method call (when called with no parameters)
+
+=item * if there is no method of that name, or if the method returns no value, try to retrieve the value of an attribute with that name
+
+=back
+
+If the value returned is an arrayref or hashref, they are likewise traversed and any object references (as opposed to arrayref or hashref) found are either removed or, if the referred object also inherits from C<Simplify>, likewise simplified.
+
+I<It is worth noting that any elements that begin with "Is" followed by a capital letter (such as IsActive, but not Isactive or isactive) will be assigned a string value of "true" or "false", depending on the truthiness of the value, instead of the actual value.>
+
+The keys and their values are returned in a data structure suitable to be serialized by any XML, JSON or YAML serializer.
+
+=back
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+None
+
+=cut
