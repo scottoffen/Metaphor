@@ -435,7 +435,7 @@ Common::Util - All kinds of fun little utility methods that get used all the fre
 
 =head1 SYNOPSIS
 
-    use Common::Util; # All of the methods below are exported by default
+    use Common::Util; # Exports all methods by default
 
     use Common::Util(':generators'); # Only exports generators
     use Common::Util(':formatters'); # Only exports formatters
@@ -513,6 +513,28 @@ Common::Util - All kinds of fun little utility methods that get used all the fre
     CompareString('beth', 'adam');                  # 1
     CompareString('adam', 'adam');                  # 0
 
+    #----------------------------------------------
+    # How to use Declassify in exported methods
+    #----------------------------------------------
+    use base Exporter;
+
+    our @EXPORT = qw(SomeExportedMethod1 SomeExportedMethod2);
+
+    sub SomeExportedMethod1
+    {
+        # if this method was called via a package or object
+        # this removes that reference from the argument list
+        my @args = Declassify(\@_);
+    }
+
+    sub SomeExportedMethod2
+    {
+        # if this method was called via a package or object
+        # this removes that reference from the argument list
+        # unless it isa->('Foo::Bar')
+        my @args = Declassify(\@_, 'Foo::Bar');
+    }
+
 =head1 DESCRIPTION
 
 An assortment of common helper methods for generating, formatting, and validating data.
@@ -585,6 +607,31 @@ Returns a random alpha-numeric string of LENGTH length (which defaults to 10 if 
 =item C<TrimString(VALUE)>
 
 Returns the value after removing extra leading and trailing whitespace.
+
+=item C<Declassify(ARRAYREF[, LIST])>
+
+The first parameter should be a reference to the parameters passed to the calling method, the optional remaining parametes can be scalar or arrayrefs to package names that should not be removed if found in the first-argument position.
+
+    use base Exporter;
+
+    our @EXPORT = qw(SomeExportedMethod1 SomeExportedMethod2);
+
+    sub SomeExportedMethod1
+    {
+        # if this method was called via a package or object
+        # this removes that reference from the argument list
+        my @args = Declassify(\@_);
+    }
+
+    sub SomeExportedMethod2
+    {
+        # if this method was called via a package or object
+        # this removes that reference from the argument list
+        # unless it isa->('Foo::Bar')
+        my @args = Declassify(\@_, 'Foo::Bar');
+    }
+
+See my L<write up on this|http://scottoffen.com/2014/05/12/declassifying-arguments-in-perl/> for a more detailed treatment.
 
 =back
 

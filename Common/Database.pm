@@ -223,7 +223,7 @@ sub Fetch
 				}
 				elsif (scalar @rows > 0)
 				{
-					return (wantarray) ? @{$rows[0]) : $rows[0];
+					return (wantarray) ? @{$rows[0]} : $rows[0];
 				}
 			}
 		}
