@@ -441,7 +441,7 @@ Common::Logging - Common logging API
 
 =head1 SYNOPSIS
 
-In config.json:
+In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
 
  {
  	...
@@ -451,7 +451,7 @@ In config.json:
  	}
  }
 
-This entry is encouraged, but optional, as you can always override it when starting a logger.
+This entry is encouraged, but optional, as you can always override the path when starting a logger.
 
 In your script:
 

@@ -379,7 +379,7 @@ Common::Database - Simplifies connecting to a MySQL database and execution of SQ
 
 =head1 SYNOPSIS
 
-In config.json:
+In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
 
  {
  	...

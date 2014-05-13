@@ -141,6 +141,8 @@ Common::Tripcode - Implements a basic tripcode algorithm for pseudo-registration
 
 Tripcodes can help verify a user's identity to others, and are a type of pseudo-registration. To use a tripcode, append a name (e.g., username or real name) with a hash mark ("#") followed by a word or short phrase (e.g. "name#password"). A hash unique to that particular word or phrase will be generated. The previous example would return "name!zwK2bfx.2U".
 
+Tripcode are a one-way encryption, and this module supplies no method to decrypt them.
+
 B<NOTE: Tripcodes are not secure, and can be cracked with relative ease.  This module does not support "secure" tripcodes.>
 
 =head2 Algorithm

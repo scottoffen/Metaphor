@@ -77,7 +77,7 @@ sub new
 	}
 	else
 	{
-		DEBUG("Insufficient characters provided to create BaseX");
+		ERROR("Insufficient characters provided to create BaseX");
 		return undef;
 	}
 	#----------------------------------------------------------------------------------#

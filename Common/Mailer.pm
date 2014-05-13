@@ -396,12 +396,9 @@ sub MergeRecipients
 #       cc      => optional : same as to field                                     #
 #       bcc     => optional : same as to field                                     #
 #       subject => optional : defaults to [no subject]                             #
-#       data    => A hashref with one or more of the following:                    #
-#       {                                                                          #
-# 	      text  => the plain text part of the email                                #
-# 	      html  => the html part of the email                                      #
-# 	      files => an array of files (base64 encoded) or file paths to attach      #
-#       }                                                                          #
+#       text  => the plain text part of the email                                  #
+# 	    html  => the html part of the email                                        #
+# 	    files => an array of files (base64 encoded) or file paths to attach        #
 #       headers => optional hashref of desired headers                             #
 #     }                                                                            #
 #----------------------------------------------------------------------------------#
@@ -667,3 +664,290 @@ sub VerifyAddresses
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::Mailer - Simple module for sending email and SMS-via-email (wraps Net::SMTP)
+
+=head1 SYNOPSIS
+
+In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
+
+ {
+     ...
+     "mailer" :
+     {
+         "accounts" :
+         {
+             "default" : "user1",
+             "user1"   :
+             {
+                 "mailhost" : "mail.domain.com",
+                 "name"     : "Fake Person",
+                 "address"  : "alias@domain.com",
+                 "username" : "user@domain.com",
+                 "password" : "cGFzc3dvcmQ="
+             }
+         },
+
+        "lists" :
+        {
+            "allusers" :
+            {
+                "user1@domain.com" : "Fake User1",
+                "user2@domain.com" : "Fake User2"
+            }
+        }
+    }
+}
+
+This entry is encouraged, but optional, as you can always configure mailer accounts on-the-fly (but not lists). Note that passwords in the config file are expected to be L<base64-encoded|http://perldoc.perl.org/MIME/Base64.html>.
+
+In your script:
+
+ use Common::Mailer;
+
+ # Send an email using values from the above config.json
+ my $result = SendEmail(
+ {
+     # Matches an existing labeled account
+     "from" => "user1",
+
+     # Matches an existing mailing list
+     "to"   => "allusers",
+
+     # Recipients can also be provided as a hashref
+     # with the email address as the key...
+     "cc"   => { "someuser@domain.com" => "Some Other User" },
+
+     # ...or with the recipeint name as the key.  Either way,
+     # a given email address can only occur once per recipient field.
+     "bcc"  => { "Switch It Up" => "switch@domain.com" },
+
+     # Optional, defaults to [no subject]
+     "subject" => "Email Subject",
+
+     # The text part of the email (optional)
+     "text"  => "the plain text part of the email",
+
+     # The html part of the email (optional)
+     "html"  => "<b>The html part of the email</b>",
+
+     # Files to attach to the email (optional)
+     "attach" =>
+     [
+         { "filename"      => "path/to/file1.pdf" },
+         {
+             "filename"    => "path/to/file2.pdf",
+             "disposition" => "inline",
+             "id"          => "contentid"
+         }
+     ],
+
+     # Optional email headers to include
+     headers =>
+     {
+         "header" => "header value"
+     }
+ });
+
+
+ # Add an account to send an email from
+ my $label = Common::Mailer->AddAccount(
+ {
+     # If no label is provided, the username is used as the label
+     "label"    => "different",
+
+     # The mailhost to send the email through, include port as needed
+     "mailhost" => "mail.domain.com",
+
+     # The senders name to be displayed
+     "name"     => "Different Person",
+
+     # The senders 'from' email account
+     "address"  => "different.alias@domain.com",
+
+     # The username of the account to send the email from
+     # (May be different from the address, depending on your mail system)
+     "username" => "different.user@domain.com",
+
+     # The password for the account to send the email from
+     "password" => "password"
+ });
+
+
+ # Send an email from the new account
+ SendEmail(
+ {
+     "from"    => "different",
+     "to"      => { "jdoe@domain.com" => "John Doe" },
+     "subject" => "Short Email",
+     "text"    => "This is a short email."
+ });
+
+ # Send an email from an on-the-fly account
+ SendEmail(
+ {
+     "from"    =>
+     {
+         "mailhost" => "mail.domain.com",
+         "name"     => "Adhoc Person",
+         "address"  => "adhoc@domain.com",
+         "username" => "adhoc@domain.com",
+         "password" => "password"
+     },
+     "to"      => { "jdoe@domain.com" => "John Doe" },
+     "subject" => "Longer Email",
+     "text"    => "This is a longer email, but still kinda short."
+ });
+
+
+ # Send an email from the default account
+ SendEmail(
+ {
+     "to"      => { "jdoe@domain.com" => "John Doe" },
+     "subject" => "Longest Email",
+     "text"  => "This is a very long email, because I'm not a huge talker."
+ });
+
+
+ # Send an SMS-via-email.  From and to follow the same conventions as with SendEmail.
+ SendText(
+ {
+     "from" => "user1",
+     "to"   => { "5555550123@tmomail.net" => "Fake T-Mobile User" },
+     "text" => "Limit your text to 160 latin or 70 non-latin characters, please."
+ });
+
+=head1 DESCRIPTION
+
+One-liners to easily send plain-text, alternative (html) and multi-part (attachments) formatted emails.
+
+=head2 Methods
+
+Only public methods are documented.  Use undocumented methods at your own risk.
+
+=head3 Exported Methods
+
+=over 4
+
+=item C<SendEmail(HASHREF)>
+
+Send an email to a preconfigured account - either from the config file or one you added - or an ah-hoc account.  Supports multiple recipients (including cc and bcc) and alternative (html) and multi-part (attachments) formats. Returns true (1) on success, undef on failure.
+
+ my $result = SendEmail(
+ {
+     # Matches an existing labeled account
+     "from" => "user1",
+
+     # Matches an existing mailing list
+     "to"   => "allusers",
+
+     # Recipients can also be provided as a hashref
+     # with the email address as the key...
+     "cc"   => { "someuser@domain.com" => "Some Other User" },
+
+     # ...or with the recipeint name as the key.  Either way,
+     # a given email address can only occur once per recipient field.
+     "bcc"  => { "Switch It Up" => "switch@domain.com" },
+
+     # Optional, defaults to [no subject]
+     "subject" => "Email Subject",
+
+     # The text part of the email (optional)
+     "text"  => "the plain text part of the email",
+
+     # The html part of the email (optional)
+     "html"  => "<b>The html part of the email</b>",
+
+     # Files to attach to the email (optional)
+     "attach" =>
+     [
+         { "filename"      => "path/to/file1.pdf" },
+         {
+             "filename"    => "path/to/file2.pdf",
+             "disposition" => "inline",
+             "id"          => "contentid"
+         }
+     ],
+
+     # Optional email headers to include
+     headers =>
+     {
+         "header" => "header value"
+     }
+ });
+
+Files to be attached are expected to be stored on disk before sending, but can be deleted immediately afterwards.
+
+=item C<SendText(HASHREF)>
+
+An alias for SendEmail that only supports the fields specific to sending an SMS via email. Returns true (1) on success, undef on failure.
+
+ # Send an SMS-via-email; from/to follow the same conventions as SendEmail.
+ SendText(
+ {
+     "from" => "user1",
+     "to"   => { "5555550123@tmomail.net" => "Fake T-Mobile User" },
+     "text" => "Plz limit txt 2 160 latin or 70 non-latin characters"
+ });
+
+=back
+
+=head3 Other Methods
+
+=over 4
+
+=item C<AddAccount(HASHREF)>
+
+Add accounts to send from or update an account already added (via the config file, ad-hoc or previous use of C<AddAccount>).  Returns the label for the account on success, undef on failure.
+
+ my $label = Common::Mailer->AddAccount(
+ {
+     "label"    => "different",
+     "mailhost" => "mail.domain.com",
+     "name"     => "Different Person",
+     "address"  => "different.alias@domain.com",
+     "username" => "different.user@domain.com",
+     "password" => "password"
+ });
+
+If the C<label> field is omitted, the username is used as the label.  The password should not be encoded, however the password will be encoded when stored in memory, and is expected to be encoded if saved in the config file.
+
+When calling C<SendEmail> with an ad-hoc account, the account is added behind the scenes using C<AddAccount>. Hence, if a label is provided on the call to C<SendEmail>, then the label can be reused in subsequent calls.  However, if you are going to do this, you might as well just use C<AddAccount> in the first place.
+
+=back
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+=over 1
+
+=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+
+=item * L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+
+=item * L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+
+=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Util>
+
+=item * L<Encode|http://perldoc.perl.org/Encode.html>
+
+=item * L<Mail::RFC822::Address|https://github.com/scottoffen/common-perl/blob/master/Mail/RFC822/Address.pm>
+
+=item * L<MIME::Base64|http://perldoc.perl.org/MIME/Base64.html>
+
+=item * L<Net::SMTP|http://perldoc.perl.org/Net/SMTP.html>
+
+=item * L<Time::Local|http://perldoc.perl.org/Time/Local.html>
+
+=back
+
+=cut
