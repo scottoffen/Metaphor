@@ -16,6 +16,7 @@ our $VERSION = '0.9';
 	use warnings;
 	use MIME::Base64;
 	use Fcntl qw(:DEFAULT :flock);
+	use Common::Util qw(Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -37,7 +38,7 @@ our $VERSION = '0.9';
 #----------------------------------------------------------------------------------#
 sub CreateFolder
 {
-	my $folder = shift;
+	my ($folder) = Declassify(\@_, __PACKAGE__);
 	my (@path, $path, $pass);
 
 	#----------------------------------------------------------------------------------#
@@ -97,7 +98,8 @@ sub CreateFolder
 #----------------------------------------------------------------------------------#
 sub DeleteFolder
 {
-	my $folder = $1 if ($_[0] =~ /^(.+)$/);
+	my @params = Declassify(\@_, __PACKAGE__);
+	my $folder = $1 if ($params[0] =~ /^(.+)$/);
 
 	#----------------------------------------------------------------------------------#
 	# Immediate returns if there is no folder or if the folder does not exists.        #
@@ -151,8 +153,8 @@ sub DeleteFolder
 #----------------------------------------------------------------------------------#
 sub DownloadFile
 {
-	my $path = (@_) ? shift : undef;
-	my $file = (@_) ? shift : 'file';
+	my ($path, $file) = Declassify(\@_, __PACKAGE__);
+	$file = GetFileName($path) unless (defined $file);
 
 	if (-e $path)
 	{
@@ -181,7 +183,7 @@ sub DownloadFile
 #----------------------------------------------------------------------------------#
 sub GetFileAsBase64
 {
-	my ($file) = @_;
+	my ($file) = Declassify(\@_, __PACKAGE__);
 	my $data;
 
 	if ((-e $file) && (!(-d $file)))
@@ -208,7 +210,7 @@ sub GetFileAsBase64
 #----------------------------------------------------------------------------------#
 sub GetFileName
 {
-	my $path = shift;
+	my ($path) = Declassify(\@_, __PACKAGE__);
 	my $file = undef;
 	my @path;
 
@@ -231,7 +233,8 @@ sub GetFileName
 #----------------------------------------------------------------------------------#
 sub GetListing
 {
-	my $directory = CreateFolder($_[0]);
+	my @params    = Declassify(\@_, __PACKAGE__);
+	my $directory = CreateFolder($params[0]);
 	my $listing   = [];
 
 	opendir(DIR, "$directory");
@@ -409,6 +412,14 @@ I might consider rewriting C<CreateFolder> and C<DeleteFolder> using C<L<File::P
 
 =head1 DEPENDENCIES
 
-L<MIME::Base64|http://search.cpan.org/~gaas/MIME-Base64-3.14/Base64.pm> and L<Fcntl|http://search.cpan.org/~rjbs/perl-5.18.2/ext/Fcntl/Fcntl.pm>
+=over 1
+
+=item * L<Common::Util|http://https://github.com/scottoffen/common-perl/wiki/Common::Util>
+
+=item * L<MIME::Base64|http://search.cpan.org/~gaas/MIME-Base64-3.14/Base64.pm>
+
+=item * L<Fcntl|http://search.cpan.org/~rjbs/perl-5.18.2/ext/Fcntl/Fcntl.pm>
+
+=back
 
 =cut

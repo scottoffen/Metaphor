@@ -75,7 +75,9 @@ sub CreateGuid
 #----------------------------------------------------------------------------------#
 sub RandomString
 {
-	my $length = shift || 10;
+	my ($length) = Declassify(\@_);
+	$length = 10 unless ($length =~ /^\d+$/);
+
 	my @chars  = ('A'..'Z','0'..'9');
 
 	my $result;
@@ -98,8 +100,9 @@ sub RandomString
 #----------------------------------------------------------------------------------#
 sub RandomNumber
 {
-    my $range   = ((@_) && ($_[0] =~ /^(\d+$)/)) ? shift : 1;
-    my $offset  = ((@_) && ($_[0] =~ /^(\d+$)/)) ? shift : 0;
+	my @params = Declassify(\@_);
+    my $range   = ((@params) && ($params[0] =~ /^(\d+$)/)) ? shift(@params) : 1;
+    my $offset  = ((@params) && ($params[0] =~ /^(\d+$)/)) ? shift(@params) : 0;
     my $result  = int(rand($range)) + $offset;
 
     return $result;
@@ -114,7 +117,7 @@ sub RandomNumber
 #----------------------------------------------------------------------------------#
 sub TrimString
 {
-	my $value = shift;
+	my ($value) = Declassify(\@_);
 
 	$value =~ s/^\s+//;
 	$value =~ s/\s+$//;
@@ -131,8 +134,8 @@ sub TrimString
 #----------------------------------------------------------------------------------#
 sub IsGuid
 {
-	my $value  = shift;
-	my $result = (($value) && ($value =~ /^[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}$/i)) ? 1 : 0;
+	my ($value) = Declassify(\@_);
+	my $result  = (($value) && ($value =~ /^[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}$/i)) ? 1 : 0;
 
     return $result;
 }
@@ -146,7 +149,7 @@ sub IsGuid
 #----------------------------------------------------------------------------------#
 sub IsEmail
 {
-	my $value  = shift;
+	my ($value) = Declassify(\@_);
 	my $result = (($value) && ($value =~ /^[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,4}$/)) ? 1 : 0;
 
 	return $result;
@@ -161,7 +164,7 @@ sub IsEmail
 #----------------------------------------------------------------------------------#
 sub IsBool
 {
-	my $value  = shift;
+	my ($value) = Declassify(\@_);
 
 	if (defined $value)
 	{
@@ -183,7 +186,7 @@ sub IsBool
 #----------------------------------------------------------------------------------#
 sub IsIPAddress
 {
-	my $value  = shift;
+	my ($value) = Declassify(\@_);
 
 	if (defined $value)
 	{
@@ -212,7 +215,7 @@ sub IsIPAddress
 #----------------------------------------------------------------------------------#
 sub IsPhone
 {
-	my $value  = shift;
+	my ($value) = Declassify(\@_);
 
 	if (defined $value)
 	{
@@ -235,7 +238,7 @@ sub IsPhone
 #----------------------------------------------------------------------------------#
 sub FormatPhone
 {
-	my $value = ((scalar @_ > 0) && (defined $_[0])) ? shift : undef;
+	my ($value) = Declassify(\@_);
 
 	if (defined $value)
 	{
@@ -258,7 +261,7 @@ sub FormatPhone
 #----------------------------------------------------------------------------------#
 sub IsNumber
 {
-	my $value = ((scalar @_ > 0) && (defined $_[0])) ? shift : undef;
+	my ($value) = Declassify(\@_);
 
 	if (defined $value)
 	{
@@ -280,10 +283,7 @@ sub IsNumber
 #----------------------------------------------------------------------------------#
 sub IsNumberInRange
 {
-	my $value  = shift;
-	my $min    = shift;
-	my $max    = shift;
-
+	my ($value, $min, $max) = Declassify(\@_);
 	if (defined $value)
 	{
 		if ((IsNumber($value)) && (IsNumber($min)) && (IsNumber($max)))
@@ -307,7 +307,7 @@ sub IsNumberInRange
 #----------------------------------------------------------------------------------#
 sub IsPostalCode
 {
-	my $value = ((scalar @_ > 0) && (defined $_[0])) ? shift : undef;
+	my ($value) = Declassify(\@_);
 
 	if (defined $value)
 	{
@@ -329,7 +329,7 @@ sub IsPostalCode
 #----------------------------------------------------------------------------------#
 sub IsCreditCard
 {
-	my $value = ((scalar @_ > 0) && (defined $_[0])) ? shift : undef;
+	my ($value) = Declassify(\@_);
 
 	if (defined $value)
 	{
@@ -352,7 +352,8 @@ sub IsCreditCard
 #----------------------------------------------------------------------------------#
 sub CompareString
 {
-	my ($x, $y) = map {lc} @_;
+	my @params = Declassify(\@_);
+	my ($x, $y) = map {lc} @params;
 	return undef unless (($x) && ($y));
 	return ($x gt $y) ? 1 : ($x lt $y) ? -1 : 0;
 }
@@ -367,57 +368,16 @@ sub CompareString
 #----------------------------------------------------------------------------------#
 sub Declassify
 {
-	my (@skip, @args, $init);
+	my @params = @_;
+	shift (@params) if ($params[0] eq __PACKAGE__);
 
-	#----------------------------------------------------------------------------------#
-	# Get the values for @args and @skip, use $init to notify you that @args have been #
-	# found.  Everything is ignored until @args have been found.                       #
-	#----------------------------------------------------------------------------------#
-	foreach my $arg (@_)
-	{
-		if (ref $arg eq 'ARRAY')
-		{
-			my @deref = @$arg;
+	my @args  = (ref $params[0] eq 'ARRAY') ? @{$params[0]} : ();
+	my $pkg   = $params[1] || __PACKAGE__;
+	my $class = blessed($args[0]) || $args[0];
 
-			if ($init)
-			{
-				push (@skip, @deref);
-			}
-			else
-			{
-				@args = @deref;
-				$init = 1;
-			}
-		}
-		elsif ($init)
-		{
-			push (@skip, $arg);
-		}
-	}
-	#----------------------------------------------------------------------------------#
+	shift(@args) if ((defined $class) && ($class eq $pkg));
 
-
-	#----------------------------------------------------------------------------------#
-	# See if the first value is an object or class that should be ignored              #
-	#----------------------------------------------------------------------------------#
-	if ($init)
-	{
-		my $class = blessed($args[0]) || $args[0];
-
-		if ($class->can('isa'))
-		{
-			foreach my $skip (@skip)
-			{
-				return @args if ($class->isa($skip));
-			}
-			shift @args;
-		}
-
-		return @args;
-	}
-	#----------------------------------------------------------------------------------#
-
-	return undef;
+	return @args;
 }
 #########################################||#########################################
 
@@ -520,19 +480,11 @@ Common::Util - All kinds of fun little utility methods that get used all the fre
 
     our @EXPORT = qw(SomeExportedMethod1 SomeExportedMethod2);
 
-    sub SomeExportedMethod1
+    sub SomeExportedMethod
     {
         # if this method was called via a package or object
         # this removes that reference from the argument list
-        my @args = Declassify(\@_);
-    }
-
-    sub SomeExportedMethod2
-    {
-        # if this method was called via a package or object
-        # this removes that reference from the argument list
-        # unless it isa->('Foo::Bar')
-        my @args = Declassify(\@_, 'Foo::Bar');
+        my @args = Declassify(\@_, __PACKAGE__);
     }
 
 =head1 DESCRIPTION
@@ -608,28 +560,9 @@ Returns a random alpha-numeric string of LENGTH length (which defaults to 10 if 
 
 Returns the value after removing extra leading and trailing whitespace.
 
-=item C<Declassify(ARRAYREF[, LIST])>
+=item C<Declassify(ARRAYREF, __PACKAGE__)>
 
-The first parameter should be a reference to the parameters passed to the calling method, the optional remaining parametes can be scalar or arrayrefs to package names that should not be removed if found in the first-argument position.
-
-    use base Exporter;
-
-    our @EXPORT = qw(SomeExportedMethod1 SomeExportedMethod2);
-
-    sub SomeExportedMethod1
-    {
-        # if this method was called via a package or object
-        # this removes that reference from the argument list
-        my @args = Declassify(\@_);
-    }
-
-    sub SomeExportedMethod2
-    {
-        # if this method was called via a package or object
-        # this removes that reference from the argument list
-        # unless it isa->('Foo::Bar')
-        my @args = Declassify(\@_, 'Foo::Bar');
-    }
+The first parameter should be a reference to the parameters passed to the calling method, the second parameter the package name to be removed.
 
 See my L<write up on this|http://scottoffen.com/2014/05/12/declassifying-arguments-in-perl/> for a more detailed treatment.
 
@@ -645,6 +578,12 @@ Implement the L<Luhn algorithm|http://en.wikipedia.org/wiki/Luhn_algorithm> in I
 
 =head1 DEPENDENCIES
 
-None
+=over 1
+
+=item * L<Time::HiRes|http://perldoc.perl.org/Time/HiRes.html>
+
+=item * L<Scalar::Util|http://perldoc.perl.org/Scalar/Util.html>
+
+=back
 
 =cut

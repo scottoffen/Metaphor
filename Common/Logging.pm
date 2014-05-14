@@ -19,6 +19,7 @@ our $VERSION = '0.9';
 	use Fcntl qw(:flock);
 	use Common::Config;
 	use Common::Storage;
+	use Common::Util qw(Declassify);
 	use Data::Dumper;
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
@@ -148,9 +149,10 @@ sub _Log
 #----------------------------------------------------------------------------------#
 sub FATAL
 {
+	my ($msg)   = Declassify(\@_, __PACKAGE__);
 	my $details = GetDetails();
 
-	$details->{'message'} = shift;
+	$details->{'message'} = $msg;
 	$details->{'level'}   = 'FATAL';
 
 	_Log($details);
@@ -164,9 +166,10 @@ sub FATAL
 #----------------------------------------------------------------------------------#
 sub ERROR
 {
+	my ($msg)   = Declassify(\@_, __PACKAGE__);
 	my $details = GetDetails();
 
-	$details->{'message'} = shift;
+	$details->{'message'} = $msg;
 	$details->{'level'}   = 'ERROR';
 
 	_Log($details);
@@ -180,9 +183,10 @@ sub ERROR
 #----------------------------------------------------------------------------------#
 sub WARN
 {
+	my ($msg)   = Declassify(\@_, __PACKAGE__);
 	my $details = GetDetails();
 
-	$details->{'message'} = shift;
+	$details->{'message'} = $msg;
 	$details->{'level'}   = 'WARN';
 
 	_Log($details);
@@ -196,9 +200,10 @@ sub WARN
 #----------------------------------------------------------------------------------#
 sub INFO
 {
+	my ($msg)   = Declassify(\@_, __PACKAGE__);
 	my $details = GetDetails();
 
-	$details->{'message'} = shift;
+	$details->{'message'} = $msg;
 	$details->{'level'}   = 'INFO';
 
 	_Log($details);
@@ -212,9 +217,10 @@ sub INFO
 #----------------------------------------------------------------------------------#
 sub DEBUG
 {
+	my ($msg)   = Declassify(\@_, __PACKAGE__);
 	my $details = GetDetails();
 
-	$details->{'message'} = shift;
+	$details->{'message'} = $msg;
 	$details->{'level'}   = 'DEBUG';
 
 	_Log($details);
@@ -228,9 +234,10 @@ sub DEBUG
 #----------------------------------------------------------------------------------#
 sub TRACE
 {
+	my ($msg)   = Declassify(\@_, __PACKAGE__);
 	my $details = GetDetails();
 
-	$details->{'message'} = shift;
+	$details->{'message'} = $msg;
 	$details->{'level'}   = 'TRACE';
 
 	_Log($details);
@@ -578,6 +585,14 @@ All logs are closed nicely when script execution is complete, so it is only nece
 
 =head1 DEPENDENCIES
 
-L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config> and L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+=over 1
+
+=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+
+=item * L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+
+=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+
+=back
 
 =cut

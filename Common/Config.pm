@@ -15,6 +15,7 @@ our $VERSION = '0.9';
 	use strict;
 	use warnings;
 	use JSON::PP;
+	use Common::Util qw(Declassify);
 	use XML::Simple qw(:strict);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
@@ -50,7 +51,7 @@ sub GetConfig
 #----------------------------------------------------------------------------------#
 sub LoadConfig
 {
-	my $file = shift;
+	my ($file) = Declassify(\@_, __PACKAGE__);
 
 	$file = Locate($file);
 
@@ -150,10 +151,10 @@ Common::Config - Locates and loads a JSON or XML configuration file.
 
 =head1 SYNOPSIS
 
-    use Common::Config; # Exports GetConfig and LoadConfig
+ use Common::Config; # Exports GetConfig and LoadConfig
 
-    my $config1 = GetConfig();
-    my $config2 = LoadConfig("config.xml");
+ my $config1 = GetConfig();
+ my $config2 = LoadConfig("config.xml");
 
 =head1 DESCRIPTION
 
@@ -189,7 +190,12 @@ Returns the file as a hashref using either JSON::PP or XML::SIMPLE (based on the
 
 =head1 DEPENDENCIES
 
-L<JSON::PP|http://search.cpan.org/~makamaka/JSON-PP-2.27203/lib/JSON/PP.pm> and
-L<XML::Simple|http://search.cpan.org/~grantm/XML-Simple-2.20/lib/XML/Simple.pm>
+=over 1
+
+=item * L<JSON::PP|http://search.cpan.org/~makamaka/JSON-PP-2.27203/lib/JSON/PP.pm>
+
+=item * L<XML::Simple|http://search.cpan.org/~grantm/XML-Simple-2.20/lib/XML/Simple.pm>
+
+=back
 
 =cut

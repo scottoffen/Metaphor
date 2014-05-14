@@ -156,7 +156,7 @@ END
 # 0 : Response Status Code                                                         #
 # 1 : Message to return                                                            #
 #----------------------------------------------------------------------------------#
-sub barf($$)
+sub barf
 {
 	my ($status, $message) = @_;
 	$STATE = 3; # Trigger Error Condition
@@ -258,7 +258,7 @@ sub GetContent
 # 0 : Request state to match (hash of arrays where the key is the ENV key)         #
 # 1 : Code to execute if headers match                                             #
 #----------------------------------------------------------------------------------#
-sub Route($$)
+sub Route
 {
 	$STATE = 0;
 
@@ -319,7 +319,7 @@ sub Route($$)
 # 1 : Content Type Key                                                             #
 # 2 : Character Set                                                                #
 #----------------------------------------------------------------------------------#
-sub SetContent($$)
+sub SetContent
 {
 	my $data    = shift;
 	my $type    = shift;
@@ -417,3 +417,63 @@ sub SetContent($$)
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Common::REST
+
+=head1 SYNOPSIS
+
+
+
+=head1 DESCRIPTION
+
+
+
+=head2 Methods
+
+Only public methods are documented.  Use undocumented methods at your own risk.
+
+=head3 Exported Methods
+
+=over 4
+
+=item C<Method(PARAM)>
+
+
+
+=back
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+=over 1
+
+=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+
+=item * L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+
+=item * L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+
+=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Util>
+
+=item * L<Encode|http://perldoc.perl.org/Encode.html>
+
+=item * L<Mail::RFC822::Address|https://github.com/scottoffen/common-perl/blob/master/Mail/RFC822/Address.pm>
+
+=item * L<MIME::Base64|http://perldoc.perl.org/MIME/Base64.html>
+
+=item * L<Net::SMTP|http://perldoc.perl.org/Net/SMTP.html>
+
+=item * L<Time::Local|http://perldoc.perl.org/Time/Local.html>
+
+=back
+
+=cut

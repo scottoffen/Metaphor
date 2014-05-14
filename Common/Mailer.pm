@@ -31,7 +31,7 @@ BEGIN
 	use Common::Config;
 	use Common::Logging;
 	use Common::Storage qw(GetFileAsBase64 GetFileName);
-	use Common::Util qw(RandomString TrimString);
+	use Common::Util qw(RandomString TrimString Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -404,8 +404,8 @@ sub MergeRecipients
 #----------------------------------------------------------------------------------#
 sub SendEmail
 {
-	my $params  = shift;
-	my $account = GetConnection($params->{from});
+	my ($params) = Declassify(\@_, __PACKAGE__);
+	my $account  = GetConnection($params->{from});
 
 	if ($account)
 	{
@@ -570,7 +570,7 @@ sub SendEmail
 #----------------------------------------------------------------------------------#
 sub SendText
 {
-	my ($params) = @_;
+	my ($params) = Declassify(\@_, __PACKAGE__);
 
 	if (($params) && (ref $params eq 'HASH'))
 	{

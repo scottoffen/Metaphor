@@ -15,6 +15,7 @@ our $VERSION = '0.9';
 	use strict;
 	use warnings;
 	use Encode qw(encode);
+	use Common::Util qw(Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -72,10 +73,11 @@ our $VERSION = '0.9';
 #----------------------------------------------------------------------------------#
 sub GetTripcode
 {
-	if ((scalar @_ > 0) && ($_[0] =~ /^(.{1,})#(.{1,})$/))
+	my ($input, $seperator) = Declassify(\@_, __PACKAGE__);
+	if ($input =~ /^(.{1,})#(.{1,})$/)
 	{
 		my ($username, $password) = ($1, $2);
-		my $seperator = (($_[1]) && (length $_[1] > 0)) ? $_[1] : '!';
+		$seperator = '!' unless (length $seperator > 0);
 
 		my $salt     = substr(($username . "H.."), 1,2);
 		my @password = split('', encode("shiftjis", $password));
@@ -206,5 +208,13 @@ Implement I<GetTripPhrase> method described L<here|http://worrydream.com/tripphr
 Using L<Encode> to convert the password to L<Shift JIS|http://en.wikipedia.org/wiki/Shift_JIS>.
 
 My algorithm is loosely based on this L<tripcode generation diagram|http://en.wikipedia.org/wiki/File:Tripcode_generation_diagram.svg> on wikipedia.
+
+=head1 DEPENDENCIES
+
+=over 1
+
+=item * L<Common::Util|http://https://github.com/scottoffen/common-perl/wiki/Common::Util>
+
+=back
 
 =cut

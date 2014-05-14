@@ -195,7 +195,7 @@ __END__
 
 =head1 NAME
 
-Common::Simplify - An L<abstract|http://en.wikipedia.org/wiki/Abstract_type> class for common object serialization
+Common::Simplify - An L<abstract|http://en.wikipedia.org/wiki/Abstract_type> package for data element serialization.
 
 =head1 SYNOPSIS
 
@@ -212,7 +212,7 @@ Common::Simplify - An L<abstract|http://en.wikipedia.org/wiki/Abstract_type> cla
 
 C<Simplify> contains a helper method (of the same name) for data serialization. It requires no parameters, but any parameters passed are added to the C<Fields> list described below.
 
-The package that inherits from C<Simplify> should (but is not required to) implement an attribute named C<Fields> that is a hashref (prefered, but could also be an arrayref). Each key in the hashref (or element in the arrayref) should represent either a method that returns a value or another attribute.
+The package that inherits from C<Simplify> should (but is not required to) implement an internal attribute named C<Fields> that is a hashref (prefered, but could also be an arrayref). Each key in the hashref (or element in the arrayref) should represent either a method that returns a value or another attribute.
 
 The intent of C<Simplify> is to easily add a measure of control to the data serialization process.  It is not intended to do any deserialization.
 
@@ -248,6 +248,10 @@ The keys and their values are returned in a data structure suitable to be serial
 
 =head1 DEPENDENCIES
 
-None
+=over 1
+
+=item * L<Scalar::Util|http://perldoc.perl.org/Scalar/Util.html>
+
+=back
 
 =cut

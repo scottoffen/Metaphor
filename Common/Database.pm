@@ -18,6 +18,7 @@ our $VERSION = '0.9';
 	use MIME::Base64;
 	use Common::Config;
 	use Common::Logging;
+	use Common::Util qw(Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -25,7 +26,7 @@ our $VERSION = '0.9';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT = qw(Fetch Execute Salt);
+	our @EXPORT = qw(Fetch Execute);
 	our $CONFIG = GetConfig()->{'database'};
 	our @ERRORS = ();
 	our $DEF    = 'default';
@@ -130,9 +131,10 @@ sub Connect
 #----------------------------------------------------------------------------------#
 sub Execute
 {
-	my $query    = (scalar @_ > 0) ? shift : undef;
-	my $bindings = ((scalar @_ > 0) && (ref $_[0] eq 'ARRAY')) ? shift : [];
-	my $database = (scalar @_ > 0) ? shift : undef;
+	my @params   =  Declassify(\@_, __PACKAGE__);
+	my $query    = (scalar @params > 0) ? shift(@params) : undef;
+	my $bindings = ((scalar @params > 0) && (ref $params[0] eq 'ARRAY')) ? shift(@params) : [];
+	my $database = (scalar @params > 0) ? shift(@params) : undef;
 
 	if ($query)
 	{
@@ -179,9 +181,10 @@ sub Execute
 #----------------------------------------------------------------------------------#
 sub Fetch
 {
-	my $query    = (scalar @_ > 0) ? shift : undef;
-	my $bindings = ((scalar @_ > 0) && (ref $_[0] eq 'ARRAY')) ? shift : [];
-	my $database = (scalar @_ > 0) ? shift : undef;
+	my @params   =  Declassify(\@_, __PACKAGE__);
+	my $query    = (scalar @params > 0) ? shift(@params) : undef;
+	my $bindings = ((scalar @params > 0) && (ref $params[0] eq 'ARRAY')) ? shift(@params) : [];
+	my $database = (scalar @params > 0) ? shift(@params) : undef;
 
 	if ($query)
 	{
@@ -292,25 +295,6 @@ sub RemoveConnection
 
 
 
-##################################|     Salt     |##################################
-# Exported                                                                         #
-#----------------------------------------------------------------------------------#
-sub Salt
-{
-	my $class = shift;
-	my $value = ((scalar @_ > 0) && (defined $_[0])) ? shift : $DEF;
-
-	if ((defined $value) && (defined $CONFIG->{$value}))
-	{
-		return (defined $CONFIG->{$value}->{salt}) ? $CONFIG->{$value}->{salt} : undef;
-	}
-
-	return undef;
-}
-#########################################||#########################################
-
-
-
 ###############################|     SetDefault     |###############################
 # Public Static                                                                    #
 #----------------------------------------------------------------------------------#
@@ -375,7 +359,7 @@ __END__
 
 =head1 NAME
 
-Common::Database - Simplifies connecting to a MySQL database and execution of SQL statements.
+Common::Database - Both a convenience wrapper for executing queries against a MySQL database as well as a way to insulate the rest of the L<Common::Perl|https://github.com/scottoffen/common-perl> framework should I decide to use a different RDBMS in the future.
 
 =head1 SYNOPSIS
 
@@ -390,15 +374,14 @@ In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
  			"host"     : "host:port",
  			"schema"   : "schema-name",
  			"username" : "username",
- 			"password" : "cGFzc3dvcmQ=",
- 			"salt"     : "salt"
+ 			"password" : "cGFzc3dvcmQ="
  		}
  	}
  }
 
 In your script:
 
- use Common::Database; # Exports Fetch, Execute and Salt
+ use Common::Database; # Exports Fetch and Execute
 
  my $id = Common::Database->AddConnection(
  {
@@ -464,10 +447,6 @@ Executes the QUERY passed in with the BINDINGS provided using the connection spe
 
 Any error produced by the connection and execution of the query can be retrieved via C<GetLastError()>.
 
-=item C<Salt([DB])>
-
-Returns the value of C<salt> for the DB specified.  If no DB is specified, it uses the default.  If no C<salt> value exists, returns undef.
-
 =back
 
 =head3 Other Methods
@@ -479,7 +458,6 @@ Returns the value of C<salt> for the DB specified.  If no DB is specified, it us
  my $id = Common::Database->AddConnection(
  {
  	"id"       => "mydb",
- 	"salt"     => "sammy",
  	"host"     => "localhost",
  	"schema"   => "my_schema",
  	"username" => "myusername",
@@ -490,7 +468,7 @@ If successful, C<$id> should contain the string "mydb".  You can pass this value
 
 You can also pass C<$id> as the last parameter to C<Fetch()> or C<Execute()> to specify that you want to use that connection instead of the default connection.
 
-Both C<salt> and C<id> are optional parameters in the hashref.  If omitted, an id will be created and returned.
+C<id> is an optional parameter in the hashref.  If omitted, an id will be created and returned.
 
 =item C<GetLastError()>
 
@@ -520,6 +498,12 @@ If DB is an id that refers to a connection configuration, that connection config
 
 =head1 DEPENDENCIES
 
-L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config> and L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+=over 1
+
+=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+
+=item * L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+
+=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Util>
 
 =cut
