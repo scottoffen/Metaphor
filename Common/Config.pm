@@ -15,6 +15,7 @@ our $VERSION = '0.9';
 	use strict;
 	use warnings;
 	use JSON::PP;
+	use Try::Tiny;
 	use Common::Util qw(Declassify);
 	use XML::Simple qw(:strict);
 	use base 'Exporter';
@@ -86,7 +87,14 @@ sub LoadJson
 		<$json_fh>
 	};
 
-	return decode_json($data);
+	try
+	{
+		return decode_json($data);
+	}
+	catch
+	{
+		return {};
+	};
 }
 #########################################||#########################################
 

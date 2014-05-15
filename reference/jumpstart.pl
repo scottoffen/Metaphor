@@ -82,6 +82,28 @@ eval
 
 
 	#----------------------------------------------------------------------------------#
+	# GET : Return all users                                                           #
+	#----------------------------------------------------------------------------------#
+	Route { REQUEST_METHOD => qr{^(get|head)$}i, PATH_INFO => qr{^/users$}i } =>
+	sub
+	{
+		my ($request, $content) = @_;
+
+		my $users = Example::User->List();
+
+		foreach my $user (@$users)
+		{
+			delete ($user->{Password});
+			delete ($user->{Salt});
+			$user->{IsActive} = ($user->{IsActive}) ? 'true' : 'false';
+		}
+
+	 	SetContent({ users => $users }, 'json');
+	};
+	#----------------------------------------------------------------------------------#
+
+
+	#----------------------------------------------------------------------------------#
 	# POST : Create a new user                                                         #
 	#----------------------------------------------------------------------------------#
 	Route { REQUEST_METHOD => qr{^post$}i, PATH_INFO => qr{^/user$}i } =>
