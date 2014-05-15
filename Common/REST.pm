@@ -16,13 +16,14 @@ our $VERSION = '0.9';
 	use warnings;
 	use Common::Config;
 	use Common::Logging;
-	use Common::Swagger;
+	# use Common::Swagger;
 	use CGI qw(:standard);
 	use CGI::Carp qw(fatalsToBrowser);
 	use JSON::PP;
 	use YAML::XS;
 	use XML::Simple;
 	use Data::Dumper;
+	use Try::Tiny;
 	use Scalar::Util qw(reftype);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
@@ -100,10 +101,11 @@ END
 		#----------------------------------------------------------------------------------#
 		# Produce Swagger API                                                              #
 		#----------------------------------------------------------------------------------#
-		if ((Common::Swagger->IsEnabled()) && ($ENV{REQUEST_METHOD} =~ /^get|head$/i) && ((!(defined $ENV{PATH_INFO})) || ($ENV{PATH_INFO} =~ /^\/?$/i)))
+		if (0)
+		# if ((Common::Swagger->IsEnabled()) && ($ENV{REQUEST_METHOD} =~ /^get|head$/i) && ((!(defined $ENV{PATH_INFO})) || ($ENV{PATH_INFO} =~ /^\/?$/i)))
 		{
-			print "Content-type: application/json\n\n";
-			print encode_json(Common::Swagger->GetAPI()) . "\n";
+			# print "Content-type: application/json\n\n";
+			# print encode_json(Common::Swagger->GetAPI()) . "\n";
 		}
 		#----------------------------------------------------------------------------------#
 
@@ -186,7 +188,7 @@ sub GetContent
 		#------------------------------------------------------------------------------------#
 		# Url encoded or multipart form data                                                 #
 		#------------------------------------------------------------------------------------#
-		if ((!$ENV{'CONTENT_TYPE'}) || ($ENV{'CONTENT_TYPE'} =~ /^(application\/x-www-form-urlencoded|multipart\/form-data)$/i))
+		if ((!$ENV{'CONTENT_TYPE'}) || ($ENV{'CONTENT_TYPE'} =~ /^(application\/x-www-form-urlencoded|multipart\/form-data).+$/i))
 		{
 			my @keys = $QUERY->param;
 			foreach my $key (@keys)
@@ -209,7 +211,14 @@ sub GetContent
 			#------------------------------------------------------------------------------------#
 			if ($ENV{'CONTENT_TYPE'} =~ /(json|javascript)$/i)
 			{
-				$Content = decode_json($data);
+				try
+				{
+					$Content = decode_json($data);
+				}
+				catch
+				{
+					WARN("Error Decoding JSON : $_");
+				};
 			}
 			#------------------------------------------------------------------------------------#
 
@@ -219,7 +228,14 @@ sub GetContent
 			#------------------------------------------------------------------------------------#
 			elsif ($ENV{'CONTENT_TYPE'} =~ /xml$/i)
 			{
-				$Content = XMLin($data);
+				try
+				{
+					$Content = XMLin($data);
+				}
+				catch
+				{
+					WARN("Error Decoding XML : $_");
+				};
 			}
 			#------------------------------------------------------------------------------------#
 
@@ -229,7 +245,14 @@ sub GetContent
 			#------------------------------------------------------------------------------------#
 			elsif ($ENV{'CONTENT_TYPE'} =~ /yaml$/i)
 			{
-				$Content = Load($data);
+				try
+				{
+					$Content = Load($data);
+				}
+				catch
+				{
+					WARN("Error Decoding YAML : $_");
+				};
 			}
 			#------------------------------------------------------------------------------------#
 		}
@@ -258,7 +281,7 @@ sub GetContent
 # 0 : Request state to match (hash of arrays where the key is the ENV key)         #
 # 1 : Code to execute if headers match                                             #
 #----------------------------------------------------------------------------------#
-sub Route
+sub Route($$)
 {
 	$STATE = 0;
 

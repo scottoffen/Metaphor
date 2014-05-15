@@ -52,7 +52,6 @@ sub GetConfig
 sub LoadConfig
 {
 	my ($file) = Declassify(\@_, __PACKAGE__);
-
 	$file = Locate($file);
 
 	if ($file)
@@ -87,9 +86,7 @@ sub LoadJson
 		<$json_fh>
 	};
 
-	$ENV{$KEY} = decode_json($data);
-
-	return 1;
+	return decode_json($data);
 }
 #########################################||#########################################
 
@@ -101,8 +98,7 @@ sub LoadJson
 sub LoadXML
 {
 	my $file = shift;
-	$ENV{$KEY} = XMLin($file, ForceArray => 0, KeyAttr => {});
-	return 1;
+	return XMLin($file, ForceArray => 0, KeyAttr => {});
 }
 #########################################||#########################################
 
