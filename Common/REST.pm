@@ -16,7 +16,7 @@ our $VERSION = '0.9';
 	use warnings;
 	use Common::Config;
 	use Common::Logging;
-	# use Common::Swagger;
+	use Common::Swagger;
 	use CGI qw(:standard);
 	use CGI::Carp qw(fatalsToBrowser);
 	use JSON::PP;
@@ -88,6 +88,12 @@ BEGIN
 #----------------------------------------------------------------------------------#
 	Common::Logging->Console($DEBUG);
 	print "Content-type: text/html\n\n" if ($DEBUG);
+
+	Common::Swagger->Config(
+	{
+		produces => [qw(application/json application/xml application/x-yaml text/xml text/yaml text/plain)],
+		consumes => [qw(application/json application/xml application/x-yaml text/xml text/yaml application/x-www-form-urlencoded multipart/form-data text/plain)]
+	});
 #----------------------------------------------------------------------------------#
 
 
@@ -98,14 +104,15 @@ END
 {
 	if ((1 > $STATE) || ($STATE > 2)) # Didn't match or errored on execution
 	{
+		print "Cache-Control: no-store, must-revalidate\n";
+
 		#----------------------------------------------------------------------------------#
 		# Produce Swagger API                                                              #
 		#----------------------------------------------------------------------------------#
-		if (0)
-		# if ((Common::Swagger->IsEnabled()) && ($ENV{REQUEST_METHOD} =~ /^get|head$/i) && ((!(defined $ENV{PATH_INFO})) || ($ENV{PATH_INFO} =~ /^\/?$/i)))
+		if ((Common::Swagger->IsEnabled()) && ($ENV{REQUEST_METHOD} =~ /^get|head$/i) && ((!(defined $ENV{PATH_INFO})) || ($ENV{PATH_INFO} =~ /^\/?$/i)))
 		{
-			# print "Content-type: application/json\n\n";
-			# print encode_json(Common::Swagger->GetAPI()) . "\n";
+			print "Content-type: application/json\n\n";
+			print encode_json(Common::Swagger->GetAPI()) . "\n";
 		}
 		#----------------------------------------------------------------------------------#
 
@@ -484,6 +491,8 @@ Only public methods are documented.  Use undocumented methods at your own risk.
 =item * L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
 
 =item * L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+
+=item * L<Common::Swagger|https://github.com/scottoffen/common-perl/wiki/Common::Swagger>
 
 =item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Util>
 

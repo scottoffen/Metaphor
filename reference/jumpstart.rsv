@@ -21,6 +21,7 @@ BEGIN
 	use Common::Util;
 	use Example::User;
 	use Common::REST;
+	use Common::Swagger;
 #----------------------------------------------------------------------------------#
 
 
@@ -38,6 +39,9 @@ BEGIN
 
 	# Send log output to the console
 	# Common::Logging->ConsoleOn();
+
+	# Enable Swagger
+	Common::Swagger->Enable();
 #----------------------------------------------------------------------------------#
 
 
