@@ -352,7 +352,7 @@ sub Activate
 {
 	my ($self) = @_;
 	$self->{IsActive} = 1;
-	$self->{Changes}->{IsActive} = 1;
+	return Execute("update $TABLE set IsActive = true where Id = ?", [$self->{Id}]);
 }
 #########################################||#########################################
 
@@ -363,7 +363,7 @@ sub Dectivate
 {
 	my ($self) = @_;
 	$self->{IsActive} = 0;
-	$self->{Changes}->{IsActive} = 1;
+	return Execute("update $TABLE set IsActive = false where Id = ?", [$self->{Id}]);
 }
 #########################################||#########################################
 

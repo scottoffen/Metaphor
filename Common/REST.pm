@@ -195,7 +195,7 @@ sub GetContent
 		#------------------------------------------------------------------------------------#
 		# Url encoded or multipart form data                                                 #
 		#------------------------------------------------------------------------------------#
-		if ((!$ENV{'CONTENT_TYPE'}) || ($ENV{'CONTENT_TYPE'} =~ /^(application\/x-www-form-urlencoded|multipart\/form-data).+$/i))
+		if ((!$ENV{'CONTENT_TYPE'}) || ($ENV{'CONTENT_TYPE'} =~ /^(application\/x-www-form-urlencoded|multipart\/form-data).*$/i))
 		{
 			my @keys = $QUERY->param;
 			foreach my $key (@keys)

@@ -1,0 +1,43 @@
+{
+	"logging"  :
+	{
+		"dir"  : "../logs"
+	},
+
+	"database" :
+	{
+		"default" :
+		{
+			"host"     : "localhost",
+			"schema"   : "common",
+			"username" : "common",
+			"password" : "cGFzc3dvcmQ="
+		}
+	},
+
+	"mailer" :
+	{
+		"accounts" :
+		{
+			"default" : "user1",
+			"user1"   :
+			{
+				"mailhost" : "mail.domain.com",
+				"name"     : "Fake Person",
+				"address"  : "alias@domain.com",
+				"username" : "user@domain.com",
+				"password" : "cGFzc3dvcmQ="
+			}
+		},
+
+
+		"lists" :
+		{
+			"allusers" :
+			{
+				"user1@domain.com" : "Fake User1",
+				"user2@domain.com" : "Fake User2"
+			}
+		}
+	}
+}

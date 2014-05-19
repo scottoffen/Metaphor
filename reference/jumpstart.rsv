@@ -35,7 +35,7 @@ BEGIN
 	my $guid = '[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}';
 
 	# Send log output to a file
-	# Common::Logging->StartLog({ file => "service.txt", level => 'DEBUG' });
+	Common::Logging->StartLog({ file => "service.txt", level => 'ALL' });
 
 	# Send log output to the console
 	# Common::Logging->ConsoleOn();
@@ -91,6 +91,7 @@ eval
 	Route { REQUEST_METHOD => qr{^(get|head)$}i, PATH_INFO => qr{^/users$}i } =>
 	sub
 	{
+
 		my ($request, $content) = @_;
 
 		my $users = Example::User->List();
@@ -113,9 +114,23 @@ eval
 	Route { REQUEST_METHOD => qr{^post$}i, PATH_INFO => qr{^/user$}i } =>
 	sub
 	{
-		#--> TODO
 		my ($request, $content) = @_;
-		SetContent({ request => $request, content => $content }, 'json');
+
+		my $data =
+		{
+			FirstName => $content->{firstname},
+			LastName  => $content->{lastname},
+			Email     => $content->{email},
+			Password  => $content->{password}
+		};
+
+		my $user = new Example::User($data);
+		my $user = (($user) && ($user->Save())) ? $user : undef;
+
+		if ($user)
+		{
+			SetContent({ user => $user->Simplify() }, 'json');
+		}
 	};
 	#----------------------------------------------------------------------------------#
 
@@ -126,9 +141,50 @@ eval
 	Route { REQUEST_METHOD => qr{^put$}i, PATH_INFO => qr{^/user/($guid)$}i } =>
 	sub
 	{
-		#--> TODO
 		my ($request, $content) = @_;
-		SetContent({ request => $request, content => $content }, 'json');
+
+		my $user   = new Example::User($request->{PATH_INFO});
+		my $result = 0;
+
+		if ($user)
+		{
+			$user->FirstName($content->{firstname}) if (defined $content->{firstname});
+			$user->LastName($content->{lastname})   if (defined $content->{lastname});
+			$user->Email($content->{email})         if (defined $content->{email});
+			$user->Password($content->{password})   if (defined $content->{password});
+
+			$result = ($user->Save()) ? 'true' : 'false';
+
+			SetContent({ result => $result, user => $user->Simplify() }, 'json');
+		}
+		else
+		{
+			SetContent({ result => 'false' }, 'json');
+		}
+	};
+	#----------------------------------------------------------------------------------#
+
+
+	#----------------------------------------------------------------------------------#
+	# PUT : Update existing user                                                       #
+	#----------------------------------------------------------------------------------#
+	Route { REQUEST_METHOD => qr{^(post|put)$}i, PATH_INFO => qr{^/user/($guid)/(activate|deactivate)$}i } =>
+	sub
+	{
+		my ($request, $content) = @_;
+		my ($id, $method) = @{$request->{PATH_INFO}};
+
+		my $user   = new Example::User($id);
+
+		if ($user)
+		{
+			my $result = (lc($method) eq 'activate') ? $user->Activate() : $user->Dectivate();
+			SetContent({ result => ($result) ? 'true' : 'false' }, 'json');
+		}
+		else
+		{
+			SetContent({ result => 'false' }, 'json');
+		}
 	};
 	#----------------------------------------------------------------------------------#
 

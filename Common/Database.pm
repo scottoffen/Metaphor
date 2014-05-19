@@ -220,13 +220,13 @@ sub Fetch
 			}
 			else
 			{
-				if (scalar @rows > 1)
+				if (wantarray)
 				{
-					return (wantarray) ? @rows : \@rows;
+					return @rows;
 				}
-				elsif (scalar @rows > 0)
+				else
 				{
-					return (wantarray) ? @{$rows[0]} : $rows[0];
+					return (scalar @rows > 1) ? \@rows : $rows[0];
 				}
 			}
 		}
