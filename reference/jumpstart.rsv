@@ -40,8 +40,11 @@ BEGIN
 	# Send log output to the console
 	# Common::Logging->ConsoleOn();
 
-	# Enable Swagger
-	Common::Swagger->Enable();
+	# Enable Swagger.  Creating a new object is not
+	# required, but it makes it easier to work with.
+	my $swagger = new Common::Swagger();
+	$swagger->Enable();
+	$swagger->AddModels(Example::User->Models());
 #----------------------------------------------------------------------------------#
 
 
@@ -125,7 +128,7 @@ eval
 		};
 
 		my $user = new Example::User($data);
-		my $user = (($user) && ($user->Save())) ? $user : undef;
+		$user = (($user) && ($user->Save())) ? $user : undef;
 
 		if ($user)
 		{

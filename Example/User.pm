@@ -31,6 +31,36 @@ our $VERSION = '1.0';
 	our $EMAIL  = '[a-z0-9._%+-]+@(?:[a-z0-9-]+\.)+[a-z]{2,4}';
 	our $BOOL   = '(1|0)';
 	our $NAME   = '.{1,50}';
+
+	our $MODEL  =
+	{
+		'User' =>
+		{
+
+		},
+
+		'Users' =>
+		{
+			id => 'Users',
+
+		}
+	};
+
+
+
+
+		# id         => 'User',
+		# name       => 'User',
+		# required   => [qw(FirstName LastName Email)],
+		# properties =>
+		# {
+		# 	Id        => { 'type' => 'string', 'description'  => 'Unique identifier for user' },
+		# 	FirstName => { 'type' => 'string', 'description'  => 'User first name' },
+		# 	LastName  => { 'type' => 'string', 'description'  => 'User last name' },
+		# 	Email     => { 'type' => 'string', 'description'  => 'User email address' },
+		# 	IsActive  => { 'type' => 'boolean', 'description' => 'Indicates user is active' },
+		# 	Password  => { 'type' => 'string', 'description'  => 'Required to create, optional to update' }
+		# }
 #----------------------------------------------------------------------------------#
 
 
@@ -556,6 +586,16 @@ sub List
 	return (wantarray) ? @results : (defined wantarray) ? \@results : undef;
 }
 #########################################||#########################################
+
+
+#################################|     Model     |##################################
+sub Model
+{
+	return ('User', $MODEL);
+}
+#########################################||#########################################
+
+
 
 1;
 
