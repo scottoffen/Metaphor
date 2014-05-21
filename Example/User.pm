@@ -36,31 +36,27 @@ our $VERSION = '1.0';
 	{
 		'User' =>
 		{
-
+			id         => 'User',
+			name       => 'User',
+			required   => [qw(FirstName LastName Email)],
+			properties =>
+			{
+				Id        => { 'type' => 'string', 'description'  => 'Unique identifier for user' },
+				FirstName => { 'type' => 'string', 'description'  => 'User first name' },
+				LastName  => { 'type' => 'string', 'description'  => 'User last name' },
+				Email     => { 'type' => 'string', 'description'  => 'User email address' },
+				IsActive  => { 'type' => 'boolean', 'description' => 'Indicates user is active' },
+				Password  => { 'type' => 'string', 'description'  => 'Required to create, optional to update' }
+			}
 		},
 
 		'Users' =>
 		{
 			id => 'Users',
+			'$ref' => 'User'
 
 		}
 	};
-
-
-
-
-		# id         => 'User',
-		# name       => 'User',
-		# required   => [qw(FirstName LastName Email)],
-		# properties =>
-		# {
-		# 	Id        => { 'type' => 'string', 'description'  => 'Unique identifier for user' },
-		# 	FirstName => { 'type' => 'string', 'description'  => 'User first name' },
-		# 	LastName  => { 'type' => 'string', 'description'  => 'User last name' },
-		# 	Email     => { 'type' => 'string', 'description'  => 'User email address' },
-		# 	IsActive  => { 'type' => 'boolean', 'description' => 'Indicates user is active' },
-		# 	Password  => { 'type' => 'string', 'description'  => 'Required to create, optional to update' }
-		# }
 #----------------------------------------------------------------------------------#
 
 
@@ -589,7 +585,7 @@ sub List
 
 
 #################################|     Model     |##################################
-sub Model
+sub Models
 {
 	return ('User', $MODEL);
 }

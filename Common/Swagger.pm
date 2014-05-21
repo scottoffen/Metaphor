@@ -165,7 +165,7 @@ sub AddModels
 	my ($models) = Declassify(\@_, __PACKAGE__);
 	if (ref $models eq 'HASH')
 	{
-		AddModel->($_, $models->{$_}) foreach (keys %$modesl);
+		AddModel->($_, $models->{$_}) foreach (keys %$models);
 	}
 }
 #########################################||#########################################
