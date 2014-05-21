@@ -19,7 +19,7 @@ our $VERSION = '0.9';
 	use Common::Storage qw(GetFileName);
 	use Common::Util qw(Declassify);
 	use JSON::PP;
-	use base 'Exporter';
+	use Data::Dumper;
 #----------------------------------------------------------------------------------#
 
 
@@ -42,8 +42,9 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our $ENABLED   = 0;
 	my  $config    = (exists GetConfig()->{'swagger'}) ? GetConfig()->{'swagger'} : { 'api-version' => '1.0.0', 'swagger-version' => '1.2' };
+
+	our $ENABLED   = 0;
 	our $A_VERSION = $config->{'api-version'};
 	our $S_VERSION = $config->{'swagger-version'};
 	our $RESOURCE  =GetFileName($ENV{REQUEST_URI}) || '';
@@ -71,7 +72,6 @@ sub new
 	return bless {}, shift;
 }
 #########################################||#########################################
-
 
 
 
@@ -131,7 +131,7 @@ sub Config
 sub AddApi
 {
 	my ($api) = Declassify(\@_, __PACKAGE__);
-	if ((defined $api) && (ref $api eq 'HASH'))
+	if (ref $api eq 'HASH')
 	{
 		push(@{$API->{apis}}, $api);
 	}
@@ -163,9 +163,10 @@ sub AddModel
 sub AddModels
 {
 	my ($models) = Declassify(\@_, __PACKAGE__);
+
 	if (ref $models eq 'HASH')
 	{
-		AddModel->($_, $models->{$_}) foreach (keys %$models);
+		AddModel($_, $models->{$_}) foreach (keys %$models);
 	}
 }
 #########################################||#########################################

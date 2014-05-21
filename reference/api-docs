@@ -24,7 +24,7 @@ use JSON::PP;
 BEGIN
 {
 	$| = 1;
-	unshift(@INC, 'C:/source/github/common-perl');
+	unshift(@INC, 'C:/vhosts/staging/assets');
 }
 #----------------------------------------------------------------------------------#
 
@@ -32,10 +32,12 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # External Dependencies                                                            #
 #----------------------------------------------------------------------------------#
+	use Common::Storage qw(GetFileName);
 	use Common::Config;
 	my  $config  = (exists GetConfig()->{'swagger'}) ? GetConfig()->{'swagger'} : { 'api-version' => '1.0.0', 'swagger-version' => '1.2' };
-	our $VERSION = $config->{'api-version'};
-	our $SWAGGER = $config->{'swagger-version'};
+	my $VERSION  = $config->{'api-version'};
+	my $SWAGGER  = $config->{'swagger-version'};
+	my $filename = GetFileName(__FILE__);
 #----------------------------------------------------------------------------------#
 
 
@@ -68,7 +70,7 @@ my ($servicedir, @files);
 {
 	$servicedir = cwd();
 	opendir(DIR, $servicedir);
-	@files = grep { (!/^\./) && (-f "$servicedir/$_") && (/\.rsv$/) } readdir(DIR);
+	@files = readdir(DIR);
 	closedir DIR;
 }
 #----------------------------------------------------------------------------------#
@@ -79,17 +81,23 @@ my ($servicedir, @files);
 #----------------------------------------------------------------------------------#
 foreach my $file (sort @files)
 {
+	my $path = join("/", ($servicedir, $file));
+	next if ((-d $path) || ($file =~ /$filename/i));
+
 	local $/;
 	open(FILE, "<" . join("/", ($servicedir, $file)));
 	flock (FILE, LOCK_SH);
 	my $code = <FILE>;
 	close(FILE);
 
-	my $description = ($code =~ /=begin description(.+)=end description/s) ? $1 : '';
-	$description =~ s/^(\r?\n)+//;
-	$description =~ s/(\r?\n)+$//;
+	if ($code =~ /^#!/)
+	{
+		my $description = ($code =~ /=begin description(.+)=end description/s) ? $1 : '';
+		$description =~ s/^(\r?\n)+//;
+		$description =~ s/(\r?\n)+$//;
 
-	push(@{$resources->{apis}}, { "path" => "/$file", "description" => $description });
+		push(@{$resources->{apis}}, { "path" => "/$file", "description" => $description });
+	}
 }
 #----------------------------------------------------------------------------------#
 

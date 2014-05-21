@@ -85,6 +85,10 @@ eval
 			SetContent({ error => "Unable to locate user (" . $request->{PATH_INFO} . ")" }, 'json');
 		}
 	};
+	$swagger->AddApi(
+	{
+		# https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#522-api-object
+	});
 	#----------------------------------------------------------------------------------#
 
 
