@@ -96,7 +96,7 @@ foreach my $file (sort @files)
 		$description =~ s/^(\r?\n)+//;
 		$description =~ s/(\r?\n)+$//;
 
-		push(@{$resources->{apis}}, { "path" => "/$file", "description" => $description });
+		push(@{$resources->{apis}}, { "path" => "/../$file", "description" => $description });
 	}
 }
 #----------------------------------------------------------------------------------#

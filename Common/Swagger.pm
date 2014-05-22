@@ -1,5 +1,5 @@
 package Common::Swagger;
-our $VERSION = '0.9';
+our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
@@ -47,7 +47,10 @@ BEGIN
 	our $ENABLED   = 0;
 	our $A_VERSION = $config->{'api-version'};
 	our $S_VERSION = $config->{'swagger-version'};
-	our $RESOURCE  =GetFileName($ENV{REQUEST_URI}) || '';
+	our $RESOURCE  = GetFileName($ENV{REQUEST_URI}) || '';
+	    $RESOURCE  = '/' . $RESOURCE;
+	our $BASEPATH  = join('', ('http://', $ENV{HTTP_HOST}, $ENV{REQUEST_URI}));
+	    $BASEPATH  =~ s/$RESOURCE\/$//;
 #----------------------------------------------------------------------------------#
 
 
@@ -58,9 +61,9 @@ our $API =
 {
 	swaggerVersion => $S_VERSION,
 	apiVersion     => $A_VERSION,
-	basePath       => "http://$ENV{HTTP_HOST}$ENV{REQUEST_URI}",
-	resourcePath   => "/" . $RESOURCE,
-	apis           => [],
+	basePath       => $BASEPATH,
+	resourcePath   => $RESOURCE,
+	apis           => {},
 	models         => {}
 };
 #----------------------------------------------------------------------------------#
@@ -80,7 +83,17 @@ sub new
 #----------------------------------------------------------------------------------#
 sub GetAPI
 {
-	return $API;
+	my %API  = map { $_, $API->{$_} } keys %$API;
+	my $apis = [];
+
+	foreach my $path (keys %{$API{apis}})
+	{
+		my $api = { path => $path, operations => $API{apis}->{$path}};
+		push(@$apis, $api);
+	}
+
+	$API{apis} = $apis;
+	return \%API;
 }
 #########################################||#########################################
 
@@ -130,10 +143,11 @@ sub Config
 #----------------------------------------------------------------------------------#
 sub AddApi
 {
-	my ($api) = Declassify(\@_, __PACKAGE__);
-	if (ref $api eq 'HASH')
+	my ($path, $api) = Declassify(\@_, __PACKAGE__);
+	if ((defined $path) && (ref $api eq 'HASH'))
 	{
-		push(@{$API->{apis}}, $api);
+		$API->{apis}->{$path} = [] unless (exists $API->{apis}->{$path});
+		push(@{$API->{apis}->{$path}}, $api);
 	}
 }
 #########################################||#########################################

@@ -3,7 +3,7 @@ Common-Perl
 
 ![](https://raw.github.com/scottoffen/Common-Perl/master/common-perl.png)
 
-**Current Version: Pre-release**
+**Current Version: 1.0.0**
 
 A set of Perl modules using the Common namespace that provide a simple and consistent interface to commonly needed functionality when building a web application. The main focus is to provide classes and functions that allow you to easily write and maintain RESTful services that interact with a MySQL database. The library also contain modules that are of more general use in logging, emailing and data creation and validation.
 

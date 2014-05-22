@@ -23,7 +23,7 @@
 			"user1"   :
 			{
 				"mailhost" : "mail.domain.com",
-				"name"     : "Fake Person",
+				"name"     : "Sample Person",
 				"address"  : "alias@domain.com",
 				"username" : "user@domain.com",
 				"password" : "cGFzc3dvcmQ="

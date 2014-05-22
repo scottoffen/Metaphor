@@ -1,5 +1,5 @@
 package Example::User;
-our $VERSION = '1.0';
+our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
@@ -29,7 +29,7 @@ our $VERSION = '1.0';
 	our $FIELDS = "$TABLE.Id, $TABLE.FirstName, $TABLE.LastName, $TABLE.Email, $TABLE.Password, $TABLE.Salt, $TABLE.IsActive";
 	our $GUID   = '[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}';
 	our $EMAIL  = '[a-z0-9._%+-]+@(?:[a-z0-9-]+\.)+[a-z]{2,4}';
-	our $BOOL   = '(1|0)';
+	our $BOOL   = '(1|0|true|false)';
 	our $NAME   = '.{1,50}';
 
 	our $MODEL  =
@@ -41,19 +41,12 @@ our $VERSION = '1.0';
 			required   => [qw(FirstName LastName Email)],
 			properties =>
 			{
-				Id        => { 'type' => 'string', 'description'  => 'Unique identifier for user' },
+				Id        => { 'type' => 'string', 'description'  => 'Unique identifier of user' },
 				FirstName => { 'type' => 'string', 'description'  => 'User first name' },
 				LastName  => { 'type' => 'string', 'description'  => 'User last name' },
 				Email     => { 'type' => 'string', 'description'  => 'User email address' },
-				IsActive  => { 'type' => 'boolean', 'description' => 'Indicates user is active' },
-				Password  => { 'type' => 'string', 'description'  => 'Required to create, optional to update' }
+				IsActive  => { 'type' => 'boolean', 'description' => 'Indicates user is active (true) or inactive (false)' },
 			}
-		},
-
-		'Users' =>
-		{
-			id => 'Users',
-			'$ref' => 'User'
 		}
 	};
 #----------------------------------------------------------------------------------#
@@ -127,7 +120,7 @@ sub new
 			'FirstName' => qr{^$NAME$},
 			'LastName'  => qr{^$NAME$},
 			'Email'     => qr{^$EMAIL$}i,
-			'IsActive'  => qr{^$BOOL$}
+			'IsActive'  => qr{^$BOOL$}i
 		}
 		#----------------------------------------------------------------------------------#
 	};
@@ -366,7 +359,7 @@ sub Password
 sub IsActive
 {
 	my ($self) = @_;
-	return $self->{IsActive};
+	return ((defined $self->{IsActive}) && ($self->{IsActive} =~ /^(1|true)$/i)) ? 1 : 0;
 }
 #########################################||#########################################
 

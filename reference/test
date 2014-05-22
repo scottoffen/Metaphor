@@ -78,16 +78,42 @@ eval
 
 		if ($user)
 		{
-		 	SetContent({ user => $user->Simplify() }, 'json');
+		 	SetContent({ user => $user->Simplify() });
 		}
 		else
 		{
-			SetContent({ error => "Unable to locate user (" . $request->{PATH_INFO} . ")" }, 'json');
+			SetContent({ error => "Unable to locate user (" . $request->{PATH_INFO} . ")" });
 		}
 	};
-	$swagger->AddApi(
+	$swagger->AddApi("/user/{id}",
 	{
-		# https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#522-api-object
+		"method"           => "GET",
+		"summary"          => "Find user by id",
+		"notes"            => "Returns a user based on id",
+		"type"             => "User",
+		"nickname"         => "getUserById",
+		"parameters"       =>
+		[
+			{
+				"name"          => "id",
+				"description"   => "Id of user that needs to be fetched",
+				"required"      => "true",
+				"type"          => "string",
+				"paramType"     => "path",
+				"allowMultiple" => "false"
+			}
+		],
+		"responseMessages" =>
+		[
+			{
+				"code"    => 400,
+				"message" => "Invalid id supplied"
+			},
+			{
+				"code"    => 404,
+				"message" => "User not found"
+			}
+		]
 	});
 	#----------------------------------------------------------------------------------#
 
@@ -110,8 +136,19 @@ eval
 			$user->{IsActive} = ($user->{IsActive}) ? 'true' : 'false';
 		}
 
-	 	SetContent({ users => $users }, 'json');
+	 	SetContent($users);
 	};
+	$swagger->AddApi("/users",
+	{
+		"method"           => "GET",
+		"summary"          => "Find all users",
+		"notes"            => "Returns a list of all users",
+		"type"             => "array",
+		"items"            => { '$ref' => 'User' },
+		"nickname"         => "getAllUsers",
+		"parameters"       => [],
+		"responseMessages" => []
+	});
 	#----------------------------------------------------------------------------------#
 
 
@@ -136,9 +173,66 @@ eval
 
 		if ($user)
 		{
-			SetContent({ user => $user->Simplify() }, 'json');
+			SetContent({ user => $user->Simplify() });
 		}
 	};
+	$swagger->AddApi("/user",
+	{
+		"method"           => "POST",
+		"summary"          => "Create user",
+		"notes"            => "Creates a new user",
+		"type"             => "User",
+		"nickname"         => "createUser",
+		"parameters"       =>
+		[
+			{
+				"name"          => "FirstName",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"required"      => "true",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "LastName",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"required"      => "true",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "Email",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"required"      => "true",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "Password",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"required"      => "true",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "IsActive",
+				"description"   => "",
+				"type"          => "boolean",
+				"paramType"     => "form",
+				"allowMultiple" => "false"
+			}
+		],
+		"responseMessages" =>
+		[
+			{
+				"code"    => 405,
+				"message" => "Invalid input"
+			}
+		]
+	});
 	#----------------------------------------------------------------------------------#
 
 
@@ -162,18 +256,76 @@ eval
 
 			$result = ($user->Save()) ? 'true' : 'false';
 
-			SetContent({ result => $result, user => $user->Simplify() }, 'json');
+			SetContent({ result => $result, user => $user->Simplify() });
 		}
 		else
 		{
-			SetContent({ result => 'false' }, 'json');
+			SetContent({ result => 'false' });
 		}
 	};
+	$swagger->AddApi("/user/{id}",
+	{
+		"method"           => "PUT",
+		"summary"          => "Update a user",
+		"notes"            => "Updates an existing user based on id",
+		"type"             => "User",
+		"nickname"         => "putUser",
+		"parameters"       =>
+		[
+			{
+				"name"          => "id",
+				"description"   => "Id of user that needs to be updated",
+				"required"      => "true",
+				"type"          => "string",
+				"paramType"     => "path",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "FirstName",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "LastName",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "Email",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "Password",
+				"description"   => "",
+				"type"          => "string",
+				"paramType"     => "form",
+				"allowMultiple" => "false"
+			}
+		],
+		"responseMessages" =>
+		[
+			{
+				"code"    => 400,
+				"message" => "Invalid id supplied"
+			},
+			{
+				"code"    => 404,
+				"message" => "User not found"
+			}
+		]
+	});
 	#----------------------------------------------------------------------------------#
 
 
 	#----------------------------------------------------------------------------------#
-	# PUT : Update existing user                                                       #
+	# POST/PUT : Activate or deactivate a user                                         #
 	#----------------------------------------------------------------------------------#
 	Route { REQUEST_METHOD => qr{^(post|put)$}i, PATH_INFO => qr{^/user/($guid)/(activate|deactivate)$}i } =>
 	sub
@@ -186,13 +338,56 @@ eval
 		if ($user)
 		{
 			my $result = (lc($method) eq 'activate') ? $user->Activate() : $user->Dectivate();
-			SetContent({ result => ($result) ? 'true' : 'false' }, 'json');
+			SetContent({ result => ($result) ? 'true' : 'false' });
 		}
 		else
 		{
-			SetContent({ result => 'false' }, 'json');
+			SetContent({ result => 'false' });
 		}
 	};
+	$swagger->AddApi("/user/{id}/{action}",
+	{
+		"method"           => "PUT",
+		"summary"          => "Activate or deactivate a user",
+		"notes"            => "Activate or deactivate an existing user based on id",
+		"type"             => "void",
+		"nickname"         => "userActivation",
+		"parameters"       =>
+		[
+			{
+				"name"          => "id",
+				"description"   => "Id of user that needs to be activated",
+				"required"      => "true",
+				"type"          => "string",
+				"paramType"     => "path",
+				"allowMultiple" => "false"
+			},
+			{
+				"name"          => "action",
+				"description"   => "Activation action to take",
+				"required"      => "true",
+				"type"          => "string",
+				"enum"          =>
+				[
+					"activate",
+					"deactivate"
+				],
+				"paramType"     => "path",
+				"allowMultiple" => "false"
+			}
+		],
+		"responseMessages" =>
+		[
+			{
+				"code"    => 400,
+				"message" => "Invalid id supplied"
+			},
+			{
+				"code"    => 404,
+				"message" => "User not found"
+			}
+		]
+	});
 	#----------------------------------------------------------------------------------#
 
 
@@ -209,13 +404,43 @@ eval
 		if ($user)
 		{
 			my $result = ($user->Delete()) ? 'true' : 'false';
-		 	SetContent({ deleted => $result }, 'json');
+		 	SetContent({ deleted => $result });
 		}
 		else
 		{
-			SetContent({ error => "Unable to locate user (" . $request->{PATH_INFO} . ")" }, 'json');
+			SetContent({ error => "Unable to locate user (" . $request->{PATH_INFO} . ")" });
 		}
 	};
+	$swagger->AddApi("/user/{id}",
+	{
+		"method"           => "DELETE",
+		"summary"          => "Delete user by id",
+		"notes"            => "Deletes a user based on id",
+		"type"             => "void",
+		"nickname"         => "deleteUser",
+		"parameters"       =>
+		[
+			{
+				"name"          => "id",
+				"description"   => "Id of user that needs to be deleted",
+				"required"      => "true",
+				"type"          => "string",
+				"paramType"     => "path",
+				"allowMultiple" => "false"
+			}
+		],
+		"responseMessages" =>
+		[
+			{
+				"code"    => 400,
+				"message" => "Invalid id supplied"
+			},
+			{
+				"code"    => 404,
+				"message" => "User not found"
+			}
+		]
+	});
 	#----------------------------------------------------------------------------------#
 };
 #########################################||#########################################
@@ -225,7 +450,7 @@ eval
 # Swagger Resourse Listing : Description                                           #
 #----------------------------------------------------------------------------------#
 =begin description
-Swagger resource description goes here.
+Operations for users
 =end description
 =cut
 #----------------------------------------------------------------------------------#

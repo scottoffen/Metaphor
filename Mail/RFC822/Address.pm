@@ -1,23 +1,15 @@
 package Mail::RFC822::Address;
 
 use strict;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
-
-require Exporter;
-
-@ISA = qw(Exporter);
+use parent Exporter;
 
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 
-@EXPORT_OK = qw( valid validlist );
-
-@EXPORT = qw(
-
-);
-$VERSION = '0.3';
-
+our $VERSION   = '0.3';
+our @EXPORT_OK = qw( valid validlist );
+our @EXPORT    = qw();
 
 my $rfc822re;
 

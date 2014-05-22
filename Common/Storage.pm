@@ -1,5 +1,5 @@
 package Common::Storage;
-our $VERSION = '0.9';
+our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
@@ -24,11 +24,14 @@ our $VERSION = '0.9';
 #----------------------------------------------------------------------------------#
 # Global Variables and Exports                                                     #
 #----------------------------------------------------------------------------------#
-	our @EXPORT    = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetListing);
+	our @EXPORT    = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing);
 	our @EXPORT_OK = qw(GetFileAsBase64);
 	our %EXPORT_TAGS =
 	(
-		'all' => [qw(CreateFolder DeleteFolder DownloadFile GetFileName GetListing GetFileAsBase64)]
+		'all'     => [qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64)],
+		'files'   => [qw(GetFileName GetFilePath)],
+		'folders' => [qw(CreateFolder DeleteFolder GetListing)],
+		'web'     => [qw(DownloadFile GetFileAsBase64)]
 	);
 #----------------------------------------------------------------------------------#
 
@@ -223,6 +226,28 @@ sub GetFileName
 	}
 
 	return $file;
+}
+#########################################||#########################################
+
+
+
+###############################|     GetFilePath     |##############################
+# Exported                                                                         #
+#----------------------------------------------------------------------------------#
+sub GetFilePath
+{
+	my ($path) = Declassify(\@_, __PACKAGE__);
+	my @path;
+
+	if (($path) && (length $path > 0))
+	{
+		$path =~ s/\\{1,}/\//g;
+		@path = split(/\//, $path);
+		pop(@path);
+		$path = join('/', @path);
+	}
+
+	return $path;
 }
 #########################################||#########################################
 
