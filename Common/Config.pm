@@ -129,10 +129,8 @@ sub Locate
 		{
 			foreach my $location (@INC)
 			{
-				if (-e join('/', ($location, $file)))
-				{
-					return join('/', ($location, $file));
-				}
+				my $location = join('/', ($location, $file));
+				return $location if (-e $location);
 			}
 		}
 	}
