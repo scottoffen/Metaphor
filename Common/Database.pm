@@ -4,7 +4,7 @@ our $VERSION = '1.0.0';
 #########################################||#########################################
 #                                                                                  #
 # Common::Database                                                                 #
-# © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
+# ï¿½ Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
 
@@ -226,7 +226,7 @@ sub Fetch
 				}
 				else
 				{
-					return (scalar @rows > 1) ? \@rows : $rows[0];
+					return (scalar @rows > 1) ? \@rows : (scalar @rows == 1) ? $rows[0] : undef;
 				}
 			}
 		}
