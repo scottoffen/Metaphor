@@ -4,7 +4,7 @@ our $VERSION = '1.0.0';
 #########################################||#########################################
 #                                                                                  #
 # Common::Database                                                                 #
-# ï¿½ Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
+# © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
 
@@ -222,7 +222,7 @@ sub Fetch
 			{
 				if (scalar @rows == 0)
 				{
-					return undef;
+					return (wantarray) ? () : undef;
 				}
 				elsif (wantarray)
 				{
