@@ -4,7 +4,7 @@ our $VERSION = '1.0.0';
 #########################################||#########################################
 #                                                                                  #
 # Common::Database                                                                 #
-# © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
+# Â© Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
 
@@ -398,7 +398,7 @@ In your script:
  Common::Database->SetDefault($id);
 
  # Execute returns 0 on failure, number of rows affected on success
- Execute("insert into customers (id, fname, lname), (?, ?)", [1, "Bart", "Simpson"]);
+ Execute("insert into customers (id, fname, lname), (?, ?, ?)", [1, "Bart", "Simpson"]);
 
  # Fetch returns an array of array refs
  my @rows = Fetch("select id, fname, lname from customers");
