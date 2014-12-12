@@ -1,9 +1,9 @@
-package Common::Encryption;
+package Metaphor::Encryption;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Encryption                                                               #
+# Metaphor::Encryption                                                             #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -14,7 +14,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
-	use Common::Util qw(Declassify);
+	use Metaphor::Util qw(Declassify);
 	use Crypt::Eksblowfish::Bcrypt qw(bcrypt en_base64);
 	use parent 'Exporter';
 #----------------------------------------------------------------------------------#
@@ -89,12 +89,12 @@ __END__
 
 =head1 NAME
 
-Common::Encryption - Both a convenience wrapper for L<bcrypt|http://en.wikipedia.org/wiki/Bcrypt>, as well as a way to insulate the rest of the L<Common::Perl|https://github.com/scottoffen/common-perl> framework should I decide to use a different encryption method in the future.
+Metaphor::Encryption - Both a convenience wrapper for L<bcrypt|http://en.wikipedia.org/wiki/Bcrypt>, as well as a way to insulate the rest of the L<Metaphor::Perl|https://github.com/scottoffen/common-perl> framework should I decide to use a different encryption method in the future.
 
 =head1 SYNOPSIS
 
  # You can export nothing, or export methods individually, or get them all
- use Common::Encryption qw(:all);
+ use Metaphor::Encryption qw(:all);
 
  my $password = "password";
  my ($hash1, $salt1) = Encrypt($password);
@@ -145,7 +145,7 @@ Pass it an unencrypted value, the salt to use in the encryption, and the encrypt
 
 =over 1
 
-=item * L<Common::Util|https://github.com/scottoffen/Common-Perl/wiki/Common::Util>
+=item * L<Metaphor::Util|https://github.com/scottoffen/Common-Perl/wiki/Metaphor::Util>
 
 =item * L<Crypt::Eksblowfish::Bcrypt|https://http://search.cpan.org/~zefram/Crypt-Eksblowfish-0.009/lib/Crypt/Eksblowfish/Bcrypt.pm>
 

@@ -1,9 +1,9 @@
-package Common::Util;
+package Metaphor::Util;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Util                                                                     #
+# Metaphor::Util                                                                   #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -23,7 +23,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT = qw(
+	our @EXPORT_OK = qw(
 		CreateGuid
 		RandomString
 		RandomNumber
@@ -42,13 +42,12 @@ our $VERSION = '1.0.0';
 		Declassify
 	);
 
-	our @EXPORT_OK = @EXPORT;
-
 	our %EXPORT_TAGS =
 	(
 		'generators' => [qw(CreateGuid RandomString RandomNumber)],
 		'formatters' => [qw(TrimString FormatPhone)],
 		'validators' => [qw(IsGuid IsEmail IsBool IsNumber IsNumberInRange IsPhone IsIPAddress IsPostalCode IsCreditCard)],
+		'all'        => [@EXPORT_OK]
 	);
 #----------------------------------------------------------------------------------#
 
@@ -391,15 +390,15 @@ __END__
 
 =head1 NAME
 
-Common::Util - All kinds of fun little utility methods that get used all the freaking time!
+Metaphor::Util - All kinds of fun little utility methods that get used all the freaking time!
 
 =head1 SYNOPSIS
 
-    use Common::Util; # Exports all methods by default
+    use Metaphor::Util; # Exports all methods by default
 
-    use Common::Util(':generators'); # Only exports generators
-    use Common::Util(':formatters'); # Only exports formatters
-    use Common::Util(':validators'); # Only exports validators
+    use Metaphor::Util(':generators'); # Only exports generators
+    use Metaphor::Util(':formatters'); # Only exports formatters
+    use Metaphor::Util(':validators'); # Only exports validators
 
     #----- G E N E R A T O R S -----#
 

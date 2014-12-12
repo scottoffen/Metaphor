@@ -1,9 +1,9 @@
-package Common::Scripting;
+package Metaphor::Scripting;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Scripting                                                                #
+# Metaphor::Scripting                                                              #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -14,8 +14,8 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
-	use Common::Config;
-	use Common::Logging;
+	use Metaphor::Config;
+	use Metaphor::Logging;
 	use CGI qw(:standard);
 	use CGI::Carp qw(fatalsToBrowser);
 	use JSON::PP;
@@ -75,7 +75,7 @@ BEGIN
 
 	our $QUERY = new CGI();
 	our $DEBUG = ((param('debug')) && (param('debug') == 1)) ? 1 : 0;
-	Common::Logging->Console($DEBUG);
+	Metaphor::Logging->Console($DEBUG);
 #----------------------------------------------------------------------------------#
 
 

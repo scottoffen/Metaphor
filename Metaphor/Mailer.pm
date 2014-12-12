@@ -1,9 +1,9 @@
-package Common::Mailer;
+package Metaphor::Mailer;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Mailer                                                                   #
+# Metaphor::Mailer                                                                 #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -28,10 +28,10 @@ BEGIN
 	use Encode qw(encode);
 	use Mail::RFC822::Address qw(valid);
 	use Time::Local;
-	use Common::Config;
-	use Common::Logging;
-	use Common::Storage qw(GetFileAsBase64 GetFileName);
-	use Common::Util qw(RandomString TrimString Declassify);
+	use Metaphor::Config;
+	use Metaphor::Logging;
+	use Metaphor::Storage qw(GetFileAsBase64 GetFileName);
+	use Metaphor::Util qw(RandomString TrimString Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -39,14 +39,17 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT    = qw(SendText SendEmail);
-	our @EXPORT_OK = @EXPORT;
+	our @EXPORT_OK = qw(SendText SendEmail);
 	our $MAILER    = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
 	our $LISTS     = $MAILER->{"lists"}      || {};
 	our $KEY       = '_SMTP';
 	our $ACCOUNTS  = {};
 	our $DEFAULT   = undef;
 
+	our %EXPORT_TAGS =
+	(
+		'all' => [qw(SendText SendEmail)]
+	);
 
 	#----------------------------------------------------------------------------------#
 	# Create default host                                                              #
@@ -79,7 +82,7 @@ BEGIN
 
 			my $account = $accounts->{$key};
 			$account->{label} = $key;
-			Common::Mailer->AddAccount($account);
+			Metaphor::Mailer->AddAccount($account);
 		}
 
 		$DEFAULT = $default if (($default) && (exists $ACCOUNTS->{$default}));
@@ -330,7 +333,7 @@ sub GetConnection
 		{
 			if ((ref $val eq 'HASH'))
 			{
-				$label = Common::Mailer->AddAccount($val)
+				$label = Metaphor::Mailer->AddAccount($val)
 			}
 			elsif (exists $ACCOUNTS->{$val})
 			{
@@ -671,11 +674,11 @@ __END__
 
 =head1 NAME
 
-Common::Mailer - Simple module for sending email and SMS-via-email (wraps Net::SMTP)
+Metaphor::Mailer - Simple module for sending email and SMS-via-email (wraps Net::SMTP)
 
 =head1 SYNOPSIS
 
-In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
+In L<config.json|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>:
 
  {
      ...
@@ -709,7 +712,7 @@ This entry is encouraged, but optional, as you can always configure mailer accou
 
 In your script:
 
- use Common::Mailer;
+ use Metaphor::Mailer;
 
  # Send an email using values from the above config.json
  my $result = SendEmail(
@@ -757,7 +760,7 @@ In your script:
 
 
  # Add an account to send an email from
- my $label = Common::Mailer->AddAccount(
+ my $label = Metaphor::Mailer->AddAccount(
  {
      # If no label is provided, the username is used as the label
      "label"    => "different",
@@ -906,7 +909,7 @@ An alias for SendEmail that only supports the fields specific to sending an SMS 
 
 Add accounts to send from or update an account already added (via the config file, ad-hoc or previous use of C<AddAccount>).  Returns the label for the account on success, undef on failure.
 
- my $label = Common::Mailer->AddAccount(
+ my $label = Metaphor::Mailer->AddAccount(
  {
      "label"    => "different",
      "mailhost" => "mail.domain.com",
@@ -930,13 +933,13 @@ When calling C<SendEmail> with an ad-hoc account, the account is added behind th
 
 =over 1
 
-=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+=item * L<Metaphor::Config|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>
 
-=item * L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+=item * L<Metaphor::Logging|https://github.com/scottoffen/common-perl/wiki/Metaphor::Logging>
 
-=item * L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+=item * L<Metaphor::Storage|https://github.com/scottoffen/common-perl/wiki/Metaphor::Storage>
 
-=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Util>
+=item * L<Metaphor::Util|https://github.com/scottoffen/common-perl/wiki/Metaphor::Util>
 
 =item * L<Encode|http://perldoc.perl.org/Encode.html>
 

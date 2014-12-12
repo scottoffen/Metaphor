@@ -1,9 +1,9 @@
-package Common::Storage;
+package Metaphor::Storage;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Storage                                                                  #
+# Metaphor::Storage                                                                #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -16,7 +16,7 @@ our $VERSION = '1.0.0';
 	use warnings;
 	use MIME::Base64;
 	use Fcntl qw(:DEFAULT :flock);
-	use Common::Util qw(Declassify);
+	use Metaphor::Util qw(Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -24,8 +24,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables and Exports                                                     #
 #----------------------------------------------------------------------------------#
-	our @EXPORT    = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing);
-	our @EXPORT_OK = qw(GetFileAsBase64);
+	our @EXPORT_OK = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64);
 	our %EXPORT_TAGS =
 	(
 		'all'     => [qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64)],
@@ -286,18 +285,18 @@ __END__
 
 =head1 NAME
 
-Common::Storage - Common Storage API
+Metaphor::Storage - Common Storage API
 
 =head1 SYNOPSIS
 
  # Exports CreateFolder DeleteFolder DownloadFile GetFileName GetListing
- use Common::Storage;
+ use Metaphor::Storage;
 
  # Additionally exports GetFileAsBase64
- use Common::Storage (':all');
+ use Metaphor::Storage (':all');
 
  # Exports just GetFileAsBase64
- use Common::Storage ('GetFileAsBase64');
+ use Metaphor::Storage ('GetFileAsBase64');
 
  my $folder = "/some/folder/path";
  my $file   = join("/", ($folder, "file.pdf"));
@@ -439,7 +438,7 @@ I might consider rewriting C<CreateFolder> and C<DeleteFolder> using C<L<File::P
 
 =over 1
 
-=item * L<Common::Util|http://https://github.com/scottoffen/common-perl/wiki/Common::Util>
+=item * L<Metaphor::Util|http://https://github.com/scottoffen/common-perl/wiki/Metaphor::Util>
 
 =item * L<MIME::Base64|http://search.cpan.org/~gaas/MIME-Base64-3.14/Base64.pm>
 

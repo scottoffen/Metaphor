@@ -1,9 +1,9 @@
-package Common::Simplify;
+package Metaphor::Simplify;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Simplify                                                                 #
+# Metaphor::Simplify                                                               #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -195,12 +195,12 @@ __END__
 
 =head1 NAME
 
-Common::Simplify - An L<abstract|http://en.wikipedia.org/wiki/Abstract_type> package for data element serialization.
+Metaphor::Simplify - An L<abstract|http://en.wikipedia.org/wiki/Abstract_type> package for data element serialization.
 
 =head1 SYNOPSIS
 
  # In your data access class package
- use parent qw(Common::Simplify);
+ use parent qw(Metaphor::Simplify);
 
  # In your data access class constructor
  $self->{Fields} = { Id => 1, Label => 1, Url => 1 };

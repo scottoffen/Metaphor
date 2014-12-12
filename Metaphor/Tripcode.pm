@@ -1,9 +1,9 @@
-package Common::Tripcode;
+package Metaphor::Tripcode;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Tripcode                                                                 #
+# Metaphor::Tripcode                                                               #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -15,7 +15,7 @@ our $VERSION = '1.0.0';
 	use strict;
 	use warnings;
 	use Encode qw(encode);
-	use Common::Util qw(Declassify);
+	use Metaphor::Util qw(Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -23,7 +23,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT  = qw(GetTripcode);
+	our @EXPORT_OK = qw(GetTripcode);
 
 	our $REPLACE =
 	{
@@ -127,11 +127,11 @@ __END__
 
 =head1 NAME
 
-Common::Tripcode - Implements a basic tripcode algorithm for pseudo-registration systems.
+Metaphor::Tripcode - Implements a basic tripcode algorithm for pseudo-registration systems.
 
 =head1 SYNOPSIS
 
-    use Common::Tripcode; # exports GetTripcode by default
+    use Metaphor::Tripcode; # exports GetTripcode by default
 
     my $tripcode = GetTripcode('name#password');
     print $tripcode;
@@ -181,7 +181,7 @@ The I<NameAndPassword> input string is expected to be in the format of 'name#pas
 
 The default tripcode separator is the bang (!).  An alternate tripcode separator can be passed in as a second argument, in which case it will be used instead.
 
-    use Common::Tripcode;
+    use Metaphor::Tripcode;
 
     my $tripcode1 = GetTripcode('name#password');
     my $tripcode2 = GetTripcode('name#password', '%');
@@ -213,7 +213,7 @@ My algorithm is loosely based on this L<tripcode generation diagram|http://en.wi
 
 =over 1
 
-=item * L<Common::Util|http://https://github.com/scottoffen/common-perl/wiki/Common::Util>
+=item * L<Metaphor::Util|http://https://github.com/scottoffen/common-perl/wiki/Metaphor::Util>
 
 =back
 

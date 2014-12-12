@@ -1,9 +1,9 @@
-package Common::REST;
+package Metaphor::REST;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::REST                                                                     #
+# Metaphor::REST                                                                   #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -14,10 +14,10 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
-	use Common::Config;
-	use Common::Logging;
-	use Common::Scripting;
-	use Common::Swagger;
+	use Metaphor::Config;
+	use Metaphor::Logging;
+	use Metaphor::Scripting;
+	use Metaphor::Swagger;
 	use CGI qw(:standard);
 	use CGI::Carp qw(fatalsToBrowser);
 	use JSON::PP;
@@ -87,10 +87,10 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Script Configuration                                                             #
 #----------------------------------------------------------------------------------#
-	Common::Logging->Console($DEBUG);
+	Metaphor::Logging->Console($DEBUG);
 	print "Content-type: text/html\n\n" if ($DEBUG);
 
-	Common::Swagger->Config(
+	Metaphor::Swagger->Config(
 	{
 		produces => [qw(application/json application/xml application/x-yaml text/xml text/yaml text/plain)],
 		consumes => [qw(application/json application/xml application/x-yaml text/xml text/yaml application/x-www-form-urlencoded multipart/form-data text/plain)]
@@ -110,10 +110,10 @@ END
 		#----------------------------------------------------------------------------------#
 		# Produce Swagger API                                                              #
 		#----------------------------------------------------------------------------------#
-		if ((Common::Swagger->IsEnabled()) && ($ENV{REQUEST_METHOD} =~ /^get|head$/i) && ((!(defined $ENV{PATH_INFO})) || ($ENV{PATH_INFO} =~ /^\/?$/i)))
+		if ((Metaphor::Swagger->IsEnabled()) && ($ENV{REQUEST_METHOD} =~ /^get|head$/i) && ((!(defined $ENV{PATH_INFO})) || ($ENV{PATH_INFO} =~ /^\/?$/i)))
 		{
 			print "Content-type: application/json\n\n";
-			print encode_json(Common::Swagger->GetAPI()) . "\n";
+			print encode_json(Metaphor::Swagger->GetAPI()) . "\n";
 		}
 		#----------------------------------------------------------------------------------#
 
@@ -356,7 +356,7 @@ __END__
 
 =head1 NAME
 
-Common::REST
+Metaphor::REST
 
 =head1 SYNOPSIS
 
@@ -388,15 +388,15 @@ Only public methods are documented.  Use undocumented methods at your own risk.
 
 =over 1
 
-=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+=item * L<Metaphor::Config|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>
 
-=item * L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+=item * L<Metaphor::Logging|https://github.com/scottoffen/common-perl/wiki/Metaphor::Logging>
 
-=item * L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+=item * L<Metaphor::Storage|https://github.com/scottoffen/common-perl/wiki/Metaphor::Storage>
 
-=item * L<Common::Swagger|https://github.com/scottoffen/common-perl/wiki/Common::Swagger>
+=item * L<Metaphor::Swagger|https://github.com/scottoffen/common-perl/wiki/Metaphor::Swagger>
 
-=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Util>
+=item * L<Metaphor::Util|https://github.com/scottoffen/common-perl/wiki/Metaphor::Util>
 
 =item * L<Encode|http://perldoc.perl.org/Encode.html>
 

@@ -1,9 +1,9 @@
-package Common::BaseX;
+package Metaphor::BaseX;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::BaseX                                                                    #
+# Metaphor::BaseX                                                                  #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -14,7 +14,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
-	use Common::Logging;
+	use Metaphor::Logging;
 #----------------------------------------------------------------------------------#
 
 
@@ -197,14 +197,14 @@ __END__
 
 =head1 NAME
 
-Common::BaseX - Allows for integer conversion of arbitrary numbering systems between base I<x> and base 10.
+Metaphor::BaseX - Allows for integer conversion of arbitrary numbering systems between base I<x> and base 10.
 
 =head1 SYNOPSIS
 
-    use Common::BaseX;
+    use Metaphor::BaseX;
 
-    my $base17  = new Common::BaseX('0123456789abcdefg');
-    my $baseXYZ = new Common::BaseX('x', 'y', 'z');
+    my $base17  = new Metaphor::BaseX('0123456789abcdefg');
+    my $baseXYZ = new Metaphor::BaseX('x', 'y', 'z');
     my $value   = 101;
 
     $value = $base17->ConvertFromBase10($value);
@@ -242,9 +242,9 @@ Only public methods are documented.
 The input array is parsed into an array of L<ascii-printable characters|http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters> ordered by their first occurrence in the array and used as a numbering system.
 
     # All three of these are using the same numbering system
-    my $foo = new Common::BaseX('scott offen');
-    my $bar = new Common::BaseX('scott', 'scott', 'offen', 'soften');
-    my $baz = new Common::BaseX('s', 'c', 'o', 't', 'f', 'e', 'n');
+    my $foo = new Metaphor::BaseX('scott offen');
+    my $bar = new Metaphor::BaseX('scott', 'scott', 'offen', 'soften');
+    my $baz = new Metaphor::BaseX('s', 'c', 'o', 't', 'f', 'e', 'n');
 
 While this means that you I<can> pass a value multiple times, it is not recommended, as this will likely end up with results you did not intend.
 
@@ -252,7 +252,7 @@ While this means that you I<can> pass a value multiple times, it is not recommen
 
 Attempts to convert a string of characters to base 10 using the internal numbering system created when the object was initialized.  Any characters not in the number system will be stripped out prior to conversion.
 
-    my $abc = new Common::BaseX('abc');
+    my $abc = new Metaphor::BaseX('abc');
     my $val = $abc->ConvertToBase10('abc');
 
     my $foo = $abc->ConvertToBase10('a9bc'); # Contains a value not in the numbering system
@@ -280,6 +280,6 @@ At some point I'd like to implement methods that would convert plain text to/fro
 
 =head1 DEPENDENCIES
 
-L<Common::Logging|https://github.com/scottoffen/Common-Perl/wiki/Common::Logging>
+L<Metaphor::Logging|https://github.com/scottoffen/Common-Perl/wiki/Metaphor::Logging>
 
 =cut

@@ -1,9 +1,9 @@
-package Common::Swagger;
+package Metaphor::Swagger;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Swagger                                                                  #
+# Metaphor::Swagger                                                                #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -14,10 +14,10 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
-	use Common::Config;
-	use Common::Logging;
-	use Common::Storage qw(GetFileName);
-	use Common::Util qw(Declassify);
+	use Metaphor::Config;
+	use Metaphor::Logging;
+	use Metaphor::Storage qw(GetFileName);
+	use Metaphor::Util qw(Declassify);
 	use JSON::PP;
 	use Data::Dumper;
 #----------------------------------------------------------------------------------#

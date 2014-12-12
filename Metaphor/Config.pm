@@ -1,9 +1,9 @@
-package Common::Config;
+package Metaphor::Config;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Config                                                                   #
+# Metaphor::Config                                                                 #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -16,7 +16,7 @@ our $VERSION = '1.0.0';
 	use warnings;
 	use JSON::PP;
 	use Try::Tiny;
-	use Common::Util qw(Declassify);
+	use Metaphor::Util qw(Declassify);
 	use XML::Simple qw(:strict);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
@@ -25,9 +25,14 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT = qw(GetConfig LoadConfig);
-	our $KEY    = "_CONFIG";
-	our $DEF    = "config.json";
+	our @EXPORT_OK = qw(GetConfig LoadConfig);
+	our $KEY       = "_CONFIG";
+	our $DEF       = "config.json";
+
+	our %EXPORT_TAGS =
+	(
+		'all' => [qw(GetConfig LoadConfig)]
+	);
 #----------------------------------------------------------------------------------#
 
 
@@ -149,11 +154,11 @@ __END__
 
 =head1 NAME
 
-Common::Config - Locates and loads a JSON or XML configuration file.
+Metaphor::Config - Locates and loads a JSON or XML configuration file.
 
 =head1 SYNOPSIS
 
- use Common::Config; # Exports GetConfig and LoadConfig
+ use Metaphor::Config; # Exports GetConfig and LoadConfig
 
  my $config1 = GetConfig();
  my $config2 = LoadConfig("config.xml");

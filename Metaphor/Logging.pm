@@ -1,9 +1,9 @@
-package Common::Logging;
+package Metaphor::Logging;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Logging                                                                  #
+# Metaphor::Logging                                                                #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -17,9 +17,9 @@ our $VERSION = '1.0.0';
 	use Time::HiRes;
 	use FileHandle;
 	use Fcntl qw(:flock);
-	use Common::Config;
-	use Common::Storage;
-	use Common::Util qw(Declassify);
+	use Metaphor::Config;
+	use Metaphor::Storage;
+	use Metaphor::Util qw(Declassify);
 	use Data::Dumper;
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
@@ -28,7 +28,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT     = qw(FATAL ERROR WARN INFO DEBUG TRACE);
+	our @EXPORT_OK  = qw(FATAL ERROR WARN INFO DEBUG TRACE);
 	our $LOGDIR     = (GetConfig()->{'logging'}) ? GetConfig()->{'logging'}->{'dir'} : undef;
 	our $CONSOLE    = 0;
 	our $KEY        = '_LOGGERS';
@@ -43,6 +43,11 @@ our $VERSION = '1.0.0';
 		'line'       => "%-6s",
 		'level'      => "%-5s"
 	};
+
+	our %EXPORT_TAGS =
+	(
+		'all' => [qw(FATAL ERROR WARN INFO DEBUG TRACE)]
+	);
 #----------------------------------------------------------------------------------#
 
 
@@ -329,7 +334,7 @@ sub GetDetails
 		#----------------------------------------------------------------------------------#
 		# Caller(1) will provide package and line number and defaults for script and sub   #
 		#----------------------------------------------------------------------------------#
-		if (($caller[3]) && ($caller[3] =~ /^Common::Logging/i))
+		if (($caller[3]) && ($caller[3] =~ /^Metaphor::Logging/i))
 		{
 			$details->{package}    = $caller[0];
 			$details->{script}     = GetFileName($caller[1]);
@@ -445,11 +450,11 @@ __END__
 
 =head1 NAME
 
-Common::Logging - Common logging API
+Metaphor::Logging - Common logging API
 
 =head1 SYNOPSIS
 
-In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
+In L<config.json|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>:
 
  {
  	...
@@ -463,21 +468,21 @@ This entry is encouraged, but optional, as you can always override the path when
 
 In your script:
 
- use Common::Logging; # Exports FATAL ERROR WARN INFO DEBUG TRACE
+ use Metaphor::Logging; # Exports FATAL ERROR WARN INFO DEBUG TRACE
 
  # Turns on console output
- Common::Logging->ConsoleOn();
+ Metaphor::Logging->ConsoleOn();
 
  # Start some loggers
- my $logger1 = Common::Logging->StartLog({ file => "log1.txt", level => "WARN"});
- my $logger2 = Common::Logging->StartLog({ level => "FATAL"});
+ my $logger1 = Metaphor::Logging->StartLog({ file => "log1.txt", level => "WARN"});
+ my $logger2 = Metaphor::Logging->StartLog({ level => "FATAL"});
 
  # Logs a warning error message, which will show up in the console
  # (because it is turned on) and in $logger1, but not $logger2
  WARN("This is a warning");
 
  # Stops the logger
- Common::Logging->StopLog($logger1);
+ Metaphor::Logging->StopLog($logger1);
 
  # Logs a warning error message, which will only up in the console
  WARN("This is another warning");
@@ -588,11 +593,11 @@ All logs are closed nicely when script execution is complete, so it is only nece
 
 =over 1
 
-=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+=item * L<Metaphor::Config|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>
 
-=item * L<Common::Storage|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+=item * L<Metaphor::Storage|https://github.com/scottoffen/common-perl/wiki/Metaphor::Storage>
 
-=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Storage>
+=item * L<Metaphor::Util|https://github.com/scottoffen/common-perl/wiki/Metaphor::Storage>
 
 =back
 

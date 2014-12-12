@@ -1,9 +1,9 @@
-package Common::Database;
+package Metaphor::Database;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Common::Database                                                                 #
+# Metaphor::Database                                                               #
 # © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
@@ -16,9 +16,9 @@ our $VERSION = '1.0.0';
 	use warnings;
 	use DBI;
 	use MIME::Base64;
-	use Common::Config;
-	use Common::Logging;
-	use Common::Util qw(Declassify);
+	use Metaphor::Config;
+	use Metaphor::Logging;
+	use Metaphor::Util qw(Declassify);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -26,12 +26,17 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT = qw(Fetch Execute);
-	our $CONFIG = GetConfig()->{'database'};
-	our @ERRORS = ();
-	our $DEF    = 'default';
-	our $KEY    = '_DBH';
-	$ENV{$KEY}  = {};
+	our @EXPORT_OK = qw(Fetch Execute);
+	our $CONFIG    = GetConfig()->{'database'};
+	our @ERRORS    = ();
+	our $DEF       = 'default';
+	our $KEY       = '_DBH';
+	$ENV{$KEY}     = {};
+
+	our %EXPORT_TAGS =
+	(
+		'all' => [qw(Fetch Execute)]
+	);
 #----------------------------------------------------------------------------------#
 
 
@@ -363,11 +368,11 @@ __END__
 
 =head1 NAME
 
-Common::Database - Both a convenience wrapper for executing queries against a MySQL database as well as a way to insulate the rest of the L<Common::Perl|https://github.com/scottoffen/common-perl> framework should I decide to use a different RDBMS in the future.
+Metaphor::Database - Both a convenience wrapper for executing queries against a MySQL database as well as a way to insulate the rest of the L<Metaphor::Perl|https://github.com/scottoffen/common-perl> framework should I decide to use a different RDBMS in the future.
 
 =head1 SYNOPSIS
 
-In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
+In L<config.json|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>:
 
  {
  	...
@@ -385,9 +390,9 @@ In L<config.json|https://github.com/scottoffen/common-perl/wiki/Common::Config>:
 
 In your script:
 
- use Common::Database; # Exports Fetch and Execute
+ use Metaphor::Database; # Exports Fetch and Execute
 
- my $id = Common::Database->AddConnection(
+ my $id = Metaphor::Database->AddConnection(
  {
  	"host"     => "localhost",
  	"schema"   => "my_schema",
@@ -395,7 +400,7 @@ In your script:
  	"password" => "cGFzc3dvcmQ="
  });
 
- Common::Database->SetDefault($id);
+ Metaphor::Database->SetDefault($id);
 
  # Execute returns 0 on failure, number of rows affected on success
  Execute("insert into customers (id, fname, lname), (?, ?, ?)", [1, "Bart", "Simpson"]);
@@ -404,10 +409,10 @@ In your script:
  my @rows = Fetch("select id, fname, lname from customers");
 
  # Returns the last error and removes it from the array
- my $error0 = Common::Database->GetLastError();
+ my $error0 = Metaphor::Database->GetLastError();
 
  # A different error is returned this time!
- my $error1 = Common::Database->GetLastError();
+ my $error1 = Metaphor::Database->GetLastError();
 
 =head1 DESCRIPTION
 
@@ -459,7 +464,7 @@ Any error produced by the connection and execution of the query can be retrieved
 
 =item C<AddConnection(HASHREF)>
 
- my $id = Common::Database->AddConnection(
+ my $id = Metaphor::Database->AddConnection(
  {
  	"id"       => "mydb",
  	"host"     => "localhost",
@@ -477,14 +482,14 @@ C<id> is an optional parameter in the hashref.  If omitted, an id will be create
 =item C<GetLastError()>
 
  # Returns the last error and removes it from the array
- my $error0 = Common::Database->GetLastError();
+ my $error0 = Metaphor::Database->GetLastError();
 
  # A different error is returned this time!
- my $error1 = Common::Database->GetLastError();
+ my $error1 = Metaphor::Database->GetLastError();
 
 Pops the last value from the array of database connection and/or execution errors and returns it.  Each consecutive call will return a different value (or no value, if there are no errors in the array).
 
-Only connection errors are automatically logged (via C<Common::Logging> using C<WARN()>).
+Only connection errors are automatically logged (via C<Metaphor::Logging> using C<WARN()>).
 
 =item C<RemoveConnection(DB)>
 
@@ -504,10 +509,10 @@ If DB is an id that refers to a connection configuration, that connection config
 
 =over 1
 
-=item * L<Common::Config|https://github.com/scottoffen/common-perl/wiki/Common::Config>
+=item * L<Metaphor::Config|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>
 
-=item * L<Common::Logging|https://github.com/scottoffen/common-perl/wiki/Common::Logging>
+=item * L<Metaphor::Logging|https://github.com/scottoffen/common-perl/wiki/Metaphor::Logging>
 
-=item * L<Common::Util|https://github.com/scottoffen/common-perl/wiki/Common::Util>
+=item * L<Metaphor::Util|https://github.com/scottoffen/common-perl/wiki/Metaphor::Util>
 
 =cut
