@@ -28,7 +28,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK  = qw(FATAL ERROR WARN INFO DEBUG TRACE);
+	our @EXPORT     = qw(FATAL ERROR WARN INFO DEBUG TRACE);
 	our $LOGDIR     = (GetConfig()->{'logging'}) ? GetConfig()->{'logging'}->{'dir'} : undef;
 	our $CONSOLE    = 0;
 	our $KEY        = '_LOGGERS';

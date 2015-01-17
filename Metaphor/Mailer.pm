@@ -39,7 +39,7 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK = qw(SendText SendEmail);
+	our @EXPORT    = qw(SendText SendEmail);
 	our $MAILER    = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
 	our $LISTS     = $MAILER->{"lists"}      || {};
 	our $KEY       = '_SMTP';

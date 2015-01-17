@@ -1,7 +1,7 @@
 package Mail::RFC822::Address;
 
 use strict;
-use parent Exporter;
+use parent 'Exporter';
 
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.

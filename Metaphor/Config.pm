@@ -25,9 +25,9 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK = qw(GetConfig LoadConfig);
-	our $KEY       = "_CONFIG";
-	our $DEF       = "config.json";
+	our @EXPORT = qw(GetConfig LoadConfig);
+	our $KEY    = "_CONFIG";
+	our $DEF    = "config.json";
 
 	our %EXPORT_TAGS =
 	(

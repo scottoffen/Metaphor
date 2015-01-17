@@ -17,7 +17,6 @@ our $VERSION = '1.0.0';
 	use Metaphor::Config;
 	use Metaphor::Logging;
 	use Metaphor::Scripting;
-	use Metaphor::Swagger;
 	use CGI qw(:standard);
 	use CGI::Carp qw(fatalsToBrowser);
 	use JSON::PP;
@@ -89,12 +88,6 @@ BEGIN
 #----------------------------------------------------------------------------------#
 	Metaphor::Logging->Console($DEBUG);
 	print "Content-type: text/html\n\n" if ($DEBUG);
-
-	Metaphor::Swagger->Config(
-	{
-		produces => [qw(application/json application/xml application/x-yaml text/xml text/yaml text/plain)],
-		consumes => [qw(application/json application/xml application/x-yaml text/xml text/yaml application/x-www-form-urlencoded multipart/form-data text/plain)]
-	});
 #----------------------------------------------------------------------------------#
 
 
@@ -107,53 +100,40 @@ END
 	{
 		print "Cache-Control: no-store, must-revalidate\n";
 
-		#----------------------------------------------------------------------------------#
-		# Produce Swagger API                                                              #
-		#----------------------------------------------------------------------------------#
-		if ((Metaphor::Swagger->IsEnabled()) && ($ENV{REQUEST_METHOD} =~ /^get|head$/i) && ((!(defined $ENV{PATH_INFO})) || ($ENV{PATH_INFO} =~ /^\/?$/i)))
-		{
-			print "Content-type: application/json\n\n";
-			print encode_json(Metaphor::Swagger->GetAPI()) . "\n";
-		}
-		#----------------------------------------------------------------------------------#
-
 
 		#----------------------------------------------------------------------------------#
 		# Handle Errors                                                                    #
 		#----------------------------------------------------------------------------------#
-		else
+		if ($@)
 		{
-			if ($@)
+			my $ERROR = $@;
+
+			#----------------------------------------------------------------------------------#
+			# Handle barfing                                                                   #
+			#----------------------------------------------------------------------------------#
+			if (ref $@ and reftype $@ eq 'HASH')
 			{
-				my $ERROR = $@;
-
-				#----------------------------------------------------------------------------------#
-				# Handle barfing                                                                   #
-				#----------------------------------------------------------------------------------#
-				if (ref $@ and reftype $@ eq 'HASH')
-				{
-					print $QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
-					print $ERROR->{message};
-				}
-				#----------------------------------------------------------------------------------#
-
-
-				#----------------------------------------------------------------------------------#
-				# Handle anything else
-				#----------------------------------------------------------------------------------#
-				else
-				{
-					print $QUERY->header( -status => 500, -type => 'text/html' );
-					print $QUERY->title('Server Error');
-					print $QUERY->p( $ERROR );
-				}
-				#----------------------------------------------------------------------------------#
+				print $QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
+				print $ERROR->{message};
 			}
+			#----------------------------------------------------------------------------------#
+
+
+			#----------------------------------------------------------------------------------#
+			# Handle anything else
+			#----------------------------------------------------------------------------------#
 			else
 			{
-				print $QUERY->header(-status => 501, -type => 'text/html');
-				print $QUERY->h1('Not Implemented: ' . $QUERY->request_method);
+				print $QUERY->header( -status => 500, -type => 'text/html' );
+				print $QUERY->title('Server Error');
+				print $QUERY->p( $ERROR );
 			}
+			#----------------------------------------------------------------------------------#
+		}
+		else
+		{
+			print $QUERY->header(-status => 501, -type => 'text/html');
+			print $QUERY->h1('Not Implemented: ' . $QUERY->request_method);
 		}
 		#----------------------------------------------------------------------------------#
 	}
@@ -393,8 +373,6 @@ Only public methods are documented.  Use undocumented methods at your own risk.
 =item * L<Metaphor::Logging|https://github.com/scottoffen/common-perl/wiki/Metaphor::Logging>
 
 =item * L<Metaphor::Storage|https://github.com/scottoffen/common-perl/wiki/Metaphor::Storage>
-
-=item * L<Metaphor::Swagger|https://github.com/scottoffen/common-perl/wiki/Metaphor::Swagger>
 
 =item * L<Metaphor::Util|https://github.com/scottoffen/common-perl/wiki/Metaphor::Util>
 
