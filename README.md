@@ -13,16 +13,13 @@ While there is no [litmus test](http://en.wikipedia.org/wiki/Litmus_test_%28poli
 <a href="http://xkcd.com/519/" target="_blank"><img src="http://imgs.xkcd.com/comics/11th_grade.png"></a>
 
 - You should be familiar enough with [MySQL](http://www.mysql.com) to authenticate to a schema, create a table and, minimally, use `select`, `insert`, `update` and `delete` statements.
-![](http://imgs.xkcd.com/comics/exploits_of_a_mom.png)
-<div>*Image courtesy of [xkcd](http://xkcd.com/327/)*</div>
+<a href="http://xkcd.com/327/" target="_blank"><img src="http://imgs.xkcd.com/comics/exploits_of_a_mom.png"></a>
 
 - You should be familiar with the principles of [ROA](http://en.wikipedia.org/wiki/Resource-oriented_architecture) and making `REST` requests.
-![](http://imgs.xkcd.com/comics/the_general_problem.png)
-*Image courtesy of [xkcd](http://xkcd.com/974/)*
+<a href="http://xkcd.com/974/" target="_blank"><img src="http://imgs.xkcd.com/comics/the_general_problem.png"></a>
 
 - You should be familiar with the [JSON](http://www.json.org/) data-interchange format.
-![](http://imgs.xkcd.com/comics/standards.png)
-*Image courtesy of [xkcd](http://xkcd.com/927/)*
+<a href="http://xkcd.com/927/" target="_blank"><img src="http://imgs.xkcd.com/comics/standards.png"></a>
 
 ## License ##
 
