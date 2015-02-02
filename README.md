@@ -15,7 +15,7 @@ While there is no [litmus test](http://en.wikipedia.org/wiki/Litmus_test_%28poli
 
 - You should be familiar enough with [MySQL](http://www.mysql.com) to authenticate to a schema, create a table and, minimally, use `select`, `insert`, `update` and `delete` statements.
 ![](http://imgs.xkcd.com/comics/exploits_of_a_mom.png)
-*Image courtesy of [xkcd](http://xkcd.com/327/)*
+<div>*Image courtesy of [xkcd](http://xkcd.com/327/)*</div>
 
 - You should be familiar with the principles of [ROA](http://en.wikipedia.org/wiki/Resource-oriented_architecture) and making `REST` requests.
 ![](http://imgs.xkcd.com/comics/the_general_problem.png)
