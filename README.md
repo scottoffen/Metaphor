@@ -10,8 +10,7 @@ Initially inspired by [Andrew Sterling Hanenkamp](http://www.onlamp.com/pub/au/3
 While there is no [litmus test](http://en.wikipedia.org/wiki/Litmus_test_%28politics%29) for those who might find Metaphor useful, the [documentation and reference material](https://github.com/scottoffen/Metaphor/wiki) is geared toward those who meet a few qualifications.
 
 - You should be familiar with the [Perl programming language](http://www.perl.org) at an intermediate level (or a beginner who is very adept at looking things up that they don't understand).
-![](http://imgs.xkcd.com/comics/11th_grade.png)
-*Image courtesy of [xkcd](http://xkcd.com/519/)*
+<a href="http://xkcd.com/519/" target="_blank"><img src="http://imgs.xkcd.com/comics/11th_grade.png"></a>
 
 - You should be familiar enough with [MySQL](http://www.mysql.com) to authenticate to a schema, create a table and, minimally, use `select`, `insert`, `update` and `delete` statements.
 ![](http://imgs.xkcd.com/comics/exploits_of_a_mom.png)
