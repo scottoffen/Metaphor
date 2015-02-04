@@ -31,7 +31,7 @@ While there is no [litmus test](http://en.wikipedia.org/wiki/Litmus_test_%28poli
 - You should be familiar with the [JSON](http://www.json.org/) data-interchange format.<br>
 <a href="http://xkcd.com/927/" target="_blank" title="I said you need to be familiar, not an expert."><img src="http://imgs.xkcd.com/comics/standards.png"></a><br><br>
 
-- Some of the material provided addresses better integration with the [Apache HTTPD server](http://httpd.apache.org/). As this is completely optional, familiarity with it is not required for using Metaphor.<br>
+- Finally, some of the material provided addresses better integration with the [Apache HTTPD server](http://httpd.apache.org/). As this is completely optional, familiarity with it is not required for using Metaphor. But if you don't know Apache, these sections will be of little to no use to you.<br>
 <a href="http://xkcd.com/278/" target="_blank" title="I said you need to be familiar, not an expert."><img src="http://imgs.xkcd.com/comics/black_hat_support.png"></a><br><br>
 
 ## License ##

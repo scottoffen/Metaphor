@@ -22,10 +22,10 @@
 			"default" : "user1",
 			"user1"   :
 			{
-				"mailhost" : "mail.domain.com",
+				"mailhost" : "mail.example.com",
 				"name"     : "Sample Person",
-				"address"  : "alias@domain.com",
-				"username" : "user@domain.com",
+				"address"  : "alias@example.com",
+				"username" : "user@example.com",
 				"password" : "cGFzc3dvcmQ="
 			}
 		},
@@ -35,8 +35,8 @@
 		{
 			"allusers" :
 			{
-				"user1@domain.com" : "Fake User1",
-				"user2@domain.com" : "Fake User2"
+				"user1@example.com" : "Fake User1",
+				"user2@example.com" : "Fake User2"
 			}
 		}
 	}
