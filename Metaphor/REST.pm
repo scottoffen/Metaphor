@@ -14,11 +14,11 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use Carp;
+	use CGI::Carp qw(fatalsToBrowser);
 	use Metaphor::Config;
 	use Metaphor::Logging;
 	use Metaphor::Scripting;
-	use CGI qw(:standard);
-	use CGI::Carp qw(fatalsToBrowser);
 	use JSON::PP;
 	use YAML::XS;
 	use XML::Simple;
@@ -58,6 +58,31 @@ BEGIN
 
 
 #----------------------------------------------------------------------------------#
+# Error Document Template                                                          #
+#----------------------------------------------------------------------------------#
+our $TEMPLATE = <<TEMPLATE;
+<!doctype html>
+<html lang=en>
+	<head>
+		<meta charset=utf-8>
+		<title>[title]</title>
+
+		<style type="text/css">
+		</style>
+
+		<script>
+		</script>
+	</head>
+	<body>
+		[message]
+	</body>
+</html>
+TEMPLATE
+#----------------------------------------------------------------------------------#
+
+
+
+#----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
 	our @EXPORT = qw(barf Route SetContent);
@@ -78,8 +103,8 @@ BEGIN
 	#----------------------------------------------------------------------------------#
 
 	our $STATE = 0; # Initial State
-	our $QUERY = new CGI();
-	our $DEBUG = ((param('debug')) && (param('debug') == 1)) ? 1 : 0;
+	our $QUERY = GetQuery();
+	our $DEBUG = (($QUERY->param('debug')) && ($QUERY->param('debug') == 1)) ? 1 : 0;
 #----------------------------------------------------------------------------------#
 
 
@@ -114,7 +139,7 @@ END
 			if (ref $@ and reftype $@ eq 'HASH')
 			{
 				print $QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
-				print $ERROR->{message};
+				print CreateErrorDoc($ERROR->{message});
 			}
 			#----------------------------------------------------------------------------------#
 
@@ -125,15 +150,14 @@ END
 			else
 			{
 				print $QUERY->header( -status => 500, -type => 'text/html' );
-				print $QUERY->title('Server Error');
-				print $QUERY->p( $ERROR );
+				print CreateErrorDoc("<p>$ERROR</p>", 'Server Error');
 			}
 			#----------------------------------------------------------------------------------#
 		}
 		else
 		{
 			print $QUERY->header(-status => 501, -type => 'text/html');
-			print $QUERY->h1('Not Implemented: ' . $QUERY->request_method);
+			print CreateErrorDoc('<h1>Not Implemented: ' . $QUERY->request_method . '</h1>', 'Server Error');
 		}
 		#----------------------------------------------------------------------------------#
 	}
@@ -328,6 +352,25 @@ sub SetContent
 
 
 
+###############################|     SetContent     |###############################
+# Private                                                                          #
+#----------------------------------------------------------------------------------#
+sub CreateErrorDoc
+{
+	my ($message, $title) = @_;
+	$title = 'Error' unless ($title);
+
+	my $template = $TEMPLATE;
+
+	$template =~ s/\[title\]/$title/i;
+	$template =~ s/\[message\]/$message/i;
+
+	return $template;
+}
+#########################################||#########################################
+
+
+
 1;
 
 __END__
@@ -340,11 +383,7 @@ Metaphor::REST
 
 =head1 SYNOPSIS
 
-
-
 =head1 DESCRIPTION
-
-
 
 =head2 Methods
 
@@ -355,8 +394,6 @@ Only public methods are documented.  Use undocumented methods at your own risk.
 =over 4
 
 =item C<Method(PARAM)>
-
-
 
 =back
 
