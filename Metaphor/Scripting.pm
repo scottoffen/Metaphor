@@ -1,4 +1,4 @@
-package Metaphor::Scripting;
+yamlpackage Metaphor::Scripting;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
@@ -18,7 +18,7 @@ our $VERSION = '1.0.0';
 	use Metaphor::Config;
 	use Metaphor::Logging;
 	use JSON::PP;
-	use YAML::XS;
+	use YAML::Any;
 	use XML::Simple;
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#

@@ -20,7 +20,7 @@ our $VERSION = '1.0.0';
 	use Metaphor::Logging;
 	use Metaphor::Scripting;
 	use JSON::PP;
-	use YAML::XS;
+	use YAML::Any;
 	use XML::Simple;
 	use Data::Dumper;
 	use Try::Tiny;
