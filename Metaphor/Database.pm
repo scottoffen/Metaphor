@@ -26,7 +26,8 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK = qw(Fetch Execute);
+	our @EXPORT    = qw(Fetch Execute);
+	our @EXPORT_OK = @EXPORT;
 	our $CONFIG    = GetConfig()->{'database'};
 	our @ERRORS    = ();
 	our $DEF       = 'default';

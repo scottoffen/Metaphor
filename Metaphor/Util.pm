@@ -23,7 +23,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK = qw(
+	our @EXPORT = qw(
 		CreateGuid
 		RandomString
 		RandomNumber
@@ -41,6 +41,8 @@ our $VERSION = '1.0.0';
 		CompareString
 		Declassify
 	);
+
+	our @EXPORT_OK = @EXPORT;
 
 	our %EXPORT_TAGS =
 	(

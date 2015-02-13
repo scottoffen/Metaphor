@@ -24,7 +24,8 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables and Exports                                                     #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64);
+	our @EXPORT    = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64);
+	our @EXPORT_OK = @EXPORT;
 	our %EXPORT_TAGS =
 	(
 		'all'     => [qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64)],
