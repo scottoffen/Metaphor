@@ -23,7 +23,8 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK = qw(GetTripcode);
+	our @EXPORT    = qw(GetTripcode);
+	our @EXPORT_OK = @EXPORT;
 
 	our $REPLACE =
 	{

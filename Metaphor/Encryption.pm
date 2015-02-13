@@ -23,7 +23,8 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT_OK = qw(Encrypt Matches);
+	our @EXPORT    = qw(Encrypt Matches);
+	our @EXPORT_OK = @EXPORT;
 
 	our %EXPORT_TAGS =
 	(
