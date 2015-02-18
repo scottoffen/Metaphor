@@ -14,46 +14,11 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
-	use Carp;
-	use CGI::Carp qw(fatalsToBrowser);
 	use Metaphor::Config;
 	use Metaphor::Logging;
 	use Metaphor::Scripting;
-	use JSON::PP;
-	use YAML::Any;
-	use XML::Simple;
-	use Data::Dumper;
-	use Try::Tiny;
 	use Scalar::Util qw(reftype);
 	use base 'Exporter';
-#----------------------------------------------------------------------------------#
-
-
-#----------------------------------------------------------------------------------#
-# Service Initialization                                                           #
-#----------------------------------------------------------------------------------#
-BEGIN
-{
-	#----------------------------------------------------------------------------------#
-	# Set default environment variables and untaint them all                           #
-	#----------------------------------------------------------------------------------#
-	$ENV{REQUEST_METHOD} = 'GET' unless defined $ENV{REQUEST_METHOD};
-	$ENV{HTTP_HOST}      = 'localhost' unless defined $ENV{HTTP_HOST};
-
-	foreach my $key ('PATH_INFO', 'CONTENT_TYPE', 'HTTP_ACCEPT', 'REQUEST_URI')
-	{
-		$ENV{$key} = '' unless defined $ENV{$key};
-	}
-
-	foreach my $key (keys %ENV)
-	{
-		unless (ref $ENV{$key})
-		{
-			$ENV{$key} = $1 if ($ENV{$key} =~ /^(.*)$/)
-		}
-	}
-	#----------------------------------------------------------------------------------#
-}
 #----------------------------------------------------------------------------------#
 
 
@@ -81,88 +46,13 @@ TEMPLATE
 #----------------------------------------------------------------------------------#
 
 
-
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT = qw(barf Route SetContent);
-
-	#----------------------------------------------------------------------------------#
-	# Content-type definitions                                                         #
-	#----------------------------------------------------------------------------------#
-	our $TYPES =
-	{
-		'default' => 'application/json',
-		'text'    => 'text/plain',
-		'json'    => 'application/json',
-		'xml'     => 'text/xml',
-		'appxml'  => 'application/xml',
-		'yaml'    => 'text/yaml',
-		'appyaml' => 'application/x-yaml'
-	};
-	#----------------------------------------------------------------------------------#
-
-	our $STATE = 0; # Initial State
-	our $QUERY = GetQuery();
-	our $DEBUG = (($QUERY->param('debug')) && ($QUERY->param('debug') == 1)) ? 1 : 0;
+	our @EXPORT = qw(barf Route Respond);
+	our $STATE  = 0; # Initial State
 #----------------------------------------------------------------------------------#
 
-
-#----------------------------------------------------------------------------------#
-# Script Configuration                                                             #
-#----------------------------------------------------------------------------------#
-	Metaphor::Logging->Console($DEBUG);
-	print "Content-type: text/html\n\n" if ($DEBUG);
-#----------------------------------------------------------------------------------#
-
-
-#----------------------------------------------------------------------------------#
-# Service Cleanup                                                                  #
-#----------------------------------------------------------------------------------#
-END
-{
-	if ((1 > $STATE) || ($STATE > 2)) # Didn't match or errored on execution
-	{
-		print "Cache-Control: no-store, must-revalidate\n";
-
-
-		#----------------------------------------------------------------------------------#
-		# Handle Errors                                                                    #
-		#----------------------------------------------------------------------------------#
-		if ($@)
-		{
-			my $ERROR = $@;
-
-			#----------------------------------------------------------------------------------#
-			# Handle barfing                                                                   #
-			#----------------------------------------------------------------------------------#
-			if (ref $@ and reftype $@ eq 'HASH')
-			{
-				print $QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
-				print CreateErrorDoc($ERROR->{message});
-			}
-			#----------------------------------------------------------------------------------#
-
-
-			#----------------------------------------------------------------------------------#
-			# Handle anything else
-			#----------------------------------------------------------------------------------#
-			else
-			{
-				print $QUERY->header( -status => 500, -type => 'text/html' );
-				print CreateErrorDoc("<p>$ERROR</p>", 'Server Error');
-			}
-			#----------------------------------------------------------------------------------#
-		}
-		else
-		{
-			print $QUERY->header(-status => 501, -type => 'text/html');
-			print CreateErrorDoc('<h1>Not Implemented: ' . $QUERY->request_method . '</h1>', 'Server Error');
-		}
-		#----------------------------------------------------------------------------------#
-	}
-}
-#----------------------------------------------------------------------------------#
 
 
 ##################################|     barf     |##################################
@@ -180,6 +70,25 @@ sub barf
 		status  => $status,
 		message => $message
 	};
+}
+#########################################||#########################################
+
+
+
+###############################|     Make Error     |###############################
+# Private                                                                          #
+#----------------------------------------------------------------------------------#
+sub mkerror
+{
+	my ($message, $title) = @_;
+	$title = 'Error' unless ($title);
+
+	my $template = $TEMPLATE;
+
+	$template =~ s/\[title\]/$title/gi;
+	$template =~ s/\[message\]/$message/gi;
+
+	return $template;
 }
 #########################################||#########################################
 
@@ -231,10 +140,7 @@ sub Route($$)
 	if ($code)
 	{
 		$STATE = 1; # Resource Match Found
-
-		print "Cache-Control: no-store, must-revalidate\n";
 		$code->($request, GetContent());
-
 		$STATE = 2; # Resource Execution Complete
 	}
 	#----------------------------------------------------------------------------------#
@@ -245,129 +151,81 @@ sub Route($$)
 
 
 
-###############################|     SetContent     |###############################
+#################################|     Respond     |################################
 # Exported                                                                         #
-# 0 : Data                                                                         #
-# 1 : Content Type Key                                                             #
-# 2 : Character Set                                                                #
 #----------------------------------------------------------------------------------#
-sub SetContent
+sub Respond($)
 {
-	my $data    = shift;
-	my $type    = shift;
-	my $charset = shift;
+	my ($params) = @_;
 
-	if ($data)
+	if (reftype $params eq 'HASH')
 	{
-		#------------------------------------------------------------------------------------#
-		# Get the correct content type                                                       #
-		#------------------------------------------------------------------------------------#
-		{
-			#------------------------------------------------------------------------------------#
-			# Check for type in cannon                                                           #
-			#------------------------------------------------------------------------------------#
-			if (defined $type)
-			{
-				if ($type =~ /json$/i)
-				{
-					$type = $TYPES->{'json'};
-				}
-				elsif ($type =~ /xml$/i)
-				{
-					$type = ($type =~ /^app/i) ? $TYPES->{'appxml'} : $TYPES->{'xml'};
-				}
-				elsif ($type =~ /yaml$/i)
-				{
-					$type = ($type =~ /^app/i) ? $TYPES->{'appyaml'} : $TYPES->{'yaml'};
-				}
-				else
-				{
-					$type = undef;
-				}
-			}
-			#------------------------------------------------------------------------------------#
+		my $content = $params->{content};
+		delete($params->{content});
 
+		$params->{'-type'}    = NegotiateType($params->{'-type'});
+		$params->{'-status'}  = "200 Success" unless ($params->{'-status'});
+		$params->{'-charset'} = "ISO-8859-1" unless ($params->{'-charset'});
 
-			#------------------------------------------------------------------------------------#
-			# Derive content type                                                                #
-			#------------------------------------------------------------------------------------#
-			if (!defined $type)
-			{
-				my @accept = split(',', $ENV{'HTTP_ACCEPT'});
-				foreach my $accept (sort @accept)
-				{
-					foreach my $key (sort {uc($a) cmp uc($b)} keys %$TYPES)
-					{
-						my $val = $TYPES->{$key};
-						if ($accept =~ /^$val$/i)
-						{
-							$type = $val;
-						}
-					}
-				}
-			}
-			#------------------------------------------------------------------------------------#
+		print $ENV{CGI}->header($params);
+		print $ENV{CGI}->no_cache(1);
 
-			$type = $TYPES->{'default'} unless (defined $type);
-
-			my $contenttype = (defined $charset) ? "Content-type: $type; charset=$charset" : "Content-type: $type";
-			print "$contenttype\n\n";
-		}
-		#------------------------------------------------------------------------------------#
-
-
-		#------------------------------------------------------------------------------------#
-		# Send the data                                                                      #
-		#------------------------------------------------------------------------------------#
-		{
-			if ($type =~ /json$/i)
-			{
-				print encode_json($data);
-			}
-			elsif ($type =~ /xml$/i)
-			{
-				print XMLout($data);
-			}
-			elsif ($type =~ /yaml$/i)
-			{
-				print Dump($data);
-			}
-			else
-			{
-				$data = Dumper($data);
-				$data =~ s/^\$VAR1 = {\r?\n//i;
-				$data =~ s/};$//;
-				$data =~ s/=>/=/g;
-				print $data;
-			}
-		}
-		#------------------------------------------------------------------------------------#
+		SetContent($content, $params->{'-type'});
 	}
 	else
 	{
-		print "Content-type: text/plain\n\n";
+		barf('500', 'Malformed Response');
 	}
 }
 #########################################||#########################################
 
 
-
-###############################|     SetContent     |###############################
-# Private                                                                          #
 #----------------------------------------------------------------------------------#
-sub CreateErrorDoc
+# Service Cleanup                                                                  #
+#----------------------------------------------------------------------------------#
+END
 {
-	my ($message, $title) = @_;
-	$title = 'Error' unless ($title);
+	if ((1 > $STATE) || ($STATE > 2)) # Didn't match or errored on execution
+	{
+		print "Cache-Control: no-store, must-revalidate\n";
 
-	my $template = $TEMPLATE;
+		#----------------------------------------------------------------------------------#
+		# Handle Errors                                                                    #
+		#----------------------------------------------------------------------------------#
+		if ($@)
+		{
+			my $ERROR = $@;
 
-	$template =~ s/\[title\]/$title/i;
-	$template =~ s/\[message\]/$message/i;
+			#----------------------------------------------------------------------------------#
+			# Handle barfing                                                                   #
+			#----------------------------------------------------------------------------------#
+			if (ref $@ and reftype $@ eq 'HASH')
+			{
+				print $ENV{CGI}->header( -status => $ERROR->{status}, -type => 'text/html' );
+				print mkerror($ERROR->{message});
+			}
+			#----------------------------------------------------------------------------------#
 
-	return $template;
+
+			#----------------------------------------------------------------------------------#
+			# Handle anything else
+			#----------------------------------------------------------------------------------#
+			else
+			{
+				print $ENV{CGI}->header( -status => 500, -type => 'text/html' );
+				print mkerror("<p>$ERROR</p>", 'Server Error');
+			}
+			#----------------------------------------------------------------------------------#
+		}
+		else
+		{
+			print $ENV{CGI}->header(-status => 501, -type => 'text/html');
+			print mkerror('<h1>Not Implemented</h1><i>' . $ENV{CGI}->request_method() . ' : ' . $ENV{CGI}->self_url() . '</i>', 'Server Error');
+		}
+		#----------------------------------------------------------------------------------#
+	}
 }
-#########################################||#########################################
+#----------------------------------------------------------------------------------#
 
 
 

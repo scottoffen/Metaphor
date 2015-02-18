@@ -18,7 +18,7 @@ our $VERSION = '1.0.0';
 	use FileHandle;
 	use Fcntl qw(:flock);
 	use Metaphor::Config;
-	use Metaphor::Storage qw(GetFileName);
+	use Metaphor::Storage;
 	use Metaphor::Util qw(Declassify);
 	use Data::Dumper;
 	use base 'Exporter';
