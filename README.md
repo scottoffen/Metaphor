@@ -1,5 +1,4 @@
-Metaphor
-========
+![](https://raw.githubusercontent.com/scottoffen/Metaphor/master/metaphor.png)
 
 Metaphor is a collection of Perl modules that supports the development and maintenance of a [resource-oriented architecture](http://en.wikipedia.org/wiki/Resource-oriented_architecture) (ROA) via [RESTful interfaces](http://en.wikipedia.org/wiki/Representational_state_transfer).
 
