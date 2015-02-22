@@ -2,9 +2,7 @@
 #!C:\lang\perl\bin\perl.exe
 use strict;
 use warnings;
-use CGI qw(:standard);
-# use CGI::Carp qw(fatalsToBrowser);
-
+use CGI::Carp qw(fatalsToBrowser);
 
 #----------------------------------------------------------------------------------#
 # Initialization                                                                   #
@@ -35,7 +33,7 @@ BEGIN
 	use Metaphor::Tripcode;
 	use Metaphor::Util;
 
-	print "Done\n";
+	print "Loaded\n";
 
 #----------------------------------------------------------------------------------#
 

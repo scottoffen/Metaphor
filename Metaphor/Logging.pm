@@ -31,7 +31,7 @@ our $VERSION = '1.0.0';
 	our @EXPORT     = qw(FATAL ERROR WARN INFO DEBUG TRACE);
 	our $LOGDIR     = (GetConfig()->{'logging'}) ? GetConfig()->{'logging'}->{'dir'} : undef;
 	our $CONSOLE    = 0;
-	our $KEY        = '_LOGGERS';
+	our $LOGGERS    = {};
 	our $FORMATTERS =
 	{
 		'time'       => "%-26s",
@@ -86,9 +86,9 @@ our $LEVELS = do
 #----------------------------------------------------------------------------------#
 END
 {
-	foreach my $key (keys %{$ENV{$KEY}})
+	foreach my $key (keys %{$LOGGERS})
 	{
-		close $ENV{$KEY}->{$key}->{'fh'};
+		close $LOGGERS->{$key}->{'fh'};
 	}
 }
 #----------------------------------------------------------------------------------#
@@ -132,9 +132,9 @@ sub _Log
 	#----------------------------------------------------------------------------------#
 	# Send generated message to all files that accept this log level                   #
 	#----------------------------------------------------------------------------------#
-	foreach my $key (keys %{$ENV{$KEY}})
+	foreach my $key (keys %{$LOGGERS})
 	{
-		my $logger = $ENV{$KEY}->{$key};
+		my $logger = $LOGGERS->{$key};
 
 		if ($logger->{'level'} >= $LEVELS->{$details->{level}})
 		{
@@ -381,7 +381,7 @@ sub GetDetails
 #----------------------------------------------------------------------------------#
 sub StartLog
 {
-	$ENV{$KEY}  = {} unless (defined $ENV{$KEY});
+	$LOGGERS  = {} unless (defined $LOGGERS);
 
 	my $class   = shift();
 	my $params  = ((@_) && (ref $_[0] eq 'HASH')) ? shift : {};
@@ -404,14 +404,14 @@ sub StartLog
 			$params->{'level'}   = 'ALL' unless (defined $params->{'level'});
 			$params->{'level'}   = $LEVELS->{$params->{'level'}} unless ($params->{'level'} =~ /^\d+$/);
 
-			return $params->{'path'} if (exists $ENV{$KEY}->{$params->{'path'}});
+			return $params->{'path'} if (exists $LOGGERS->{$params->{'path'}});
 
 			$params->{'path'} = $1 if ($params->{'path'} =~ /^(.+)$/);
 			$params->{'fh'} = new FileHandle(">> " . $params->{'path'}) || ($error = "!" . $!);
 
 			unless ($error)
 			{
-				$ENV{$KEY}->{$params->{'path'}} = $params;
+				$LOGGERS->{$params->{'path'}} = $params;
 				return $params->{'path'};
 			}
 		}
@@ -432,10 +432,10 @@ sub StopLog
 	my $class = shift;
 	my $path  = shift;
 
-	if (($path) && (defined $ENV{$KEY}->{$path}))
+	if (($path) && (defined $LOGGERS->{$path}))
 	{
-		close $ENV{$KEY}->{$path}->{'fh'};
-		delete $ENV{$KEY}->{$path};
+		close $LOGGERS->{$path}->{'fh'};
+		delete $LOGGERS->{$path};
 	}
 }
 #########################################||#########################################

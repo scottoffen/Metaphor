@@ -42,14 +42,9 @@ BEGIN
 	our @EXPORT    = qw(SendText SendEmail);
 	our $MAILER    = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
 	our $LISTS     = $MAILER->{"lists"}      || {};
-	our $KEY       = '_SMTP';
+	our $SMTP      = {};
 	our $ACCOUNTS  = {};
 	our $DEFAULT   = undef;
-
-	our %EXPORT_TAGS =
-	(
-		'all' => [qw(SendText SendEmail)]
-	);
 
 	#----------------------------------------------------------------------------------#
 	# Create default host                                                              #
@@ -89,7 +84,6 @@ BEGIN
 	}
 	#----------------------------------------------------------------------------------#
 
-	$ENV{$KEY}  = {};
 #----------------------------------------------------------------------------------#
 
 
@@ -98,9 +92,9 @@ BEGIN
 #----------------------------------------------------------------------------------#
 END
 {
-	foreach my $key (keys %{$ENV{$KEY}})
+	foreach my $key (keys %{$SMTP})
 	{
-		my $smtp = $ENV{$KEY}->{$key}->{smtp};
+		my $smtp = $SMTP->{$key}->{smtp};
 		$smtp->quit() if (ref $smtp eq "Net::SMTP");
 	}
 }
@@ -264,8 +258,8 @@ sub Connect
 		if ($smtp->auth($account->{username}, decode_base64($account->{password})))
 		{
 			$account->{smtp}     = $smtp;
-			$ENV{$KEY}->{$label} = $account;
-			return $ENV{$KEY}->{$label};
+			$SMTP->{$label} = $account;
+			return $SMTP->{$label};
 		}
 		else
 		{
@@ -349,9 +343,9 @@ sub GetConnection
 	#----------------------------------------------------------------------------------#
 	if ($label)
 	{
-		if (exists $ENV{$KEY}->{$label})
+		if (exists $SMTP->{$label})
 		{
-			return $ENV{$KEY}->{$label};
+			return $SMTP->{$label};
 		}
 		else
 		{
@@ -383,7 +377,7 @@ sub MergeRecipients
 		}
 	}
 
-	return (keys $merged);
+	return (keys %$merged);
 }
 #########################################||#########################################
 

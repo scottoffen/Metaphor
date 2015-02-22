@@ -167,8 +167,8 @@ sub Respond($)
 		$params->{'-status'}  = "200 Success" unless ($params->{'-status'});
 		$params->{'-charset'} = "ISO-8859-1" unless ($params->{'-charset'});
 
-		print $ENV{CGI}->header($params);
-		print $ENV{CGI}->no_cache(1);
+		$Metaphor::Scripting::QUERY->no_cache(1);
+		print $Metaphor::Scripting::QUERY->header($params);
 
 		SetContent($content, $params->{'-type'});
 	}
@@ -201,7 +201,7 @@ END
 			#----------------------------------------------------------------------------------#
 			if (ref $@ and reftype $@ eq 'HASH')
 			{
-				print $ENV{CGI}->header( -status => $ERROR->{status}, -type => 'text/html' );
+				print $Metaphor::Scripting::QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
 				print mkerror($ERROR->{message});
 			}
 			#----------------------------------------------------------------------------------#
@@ -212,15 +212,15 @@ END
 			#----------------------------------------------------------------------------------#
 			else
 			{
-				print $ENV{CGI}->header( -status => 500, -type => 'text/html' );
+				print $Metaphor::Scripting::QUERY->header( -status => 500, -type => 'text/html' );
 				print mkerror("<p>$ERROR</p>", 'Server Error');
 			}
 			#----------------------------------------------------------------------------------#
 		}
 		else
 		{
-			print $ENV{CGI}->header(-status => 501, -type => 'text/html');
-			print mkerror('<h1>Not Implemented</h1><i>' . $ENV{CGI}->request_method() . ' : ' . $ENV{CGI}->self_url() . '</i>', 'Server Error');
+			print $Metaphor::Scripting::QUERY->header(-status => 501, -type => 'text/html');
+			print mkerror('<h1>Not Implemented</h1><i>' . $Metaphor::Scripting::QUERY->request_method() . ' : ' . $Metaphor::Scripting::QUERY->self_url() . '</i>', 'Server Error');
 		}
 		#----------------------------------------------------------------------------------#
 	}

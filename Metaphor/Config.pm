@@ -25,14 +25,9 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT = qw(GetConfig LoadConfig);
-	our $KEY    = "_CONFIG";
-	our $DEF    = "config.json";
-
-	our %EXPORT_TAGS =
-	(
-		'all' => [qw(GetConfig LoadConfig)]
-	);
+	our @EXPORT  = qw(GetConfig LoadConfig);
+	our $CONFIG  = undef;
+	our $DEFAULT = "config.json";
 #----------------------------------------------------------------------------------#
 
 
@@ -41,12 +36,12 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 sub GetConfig
 {
-	unless ((defined $ENV{$KEY}) && (ref $ENV{$KEY} eq 'HASH'))
+	unless ((defined $CONFIG) && (ref $CONFIG eq 'HASH'))
 	{
-		$ENV{$KEY} = LoadConfig(@_);
+		$CONFIG = LoadConfig(@_);
 	}
 
-	return $ENV{$KEY};
+	return $CONFIG;
 }
 #########################################||#########################################
 
@@ -94,7 +89,8 @@ sub LoadJson
 
 	try
 	{
-		return decode_json($data);
+		$data = decode_json($data);
+		return $data;
 	}
 	catch
 	{
@@ -122,7 +118,7 @@ sub LoadXML
 #----------------------------------------------------------------------------------#
 sub Locate
 {
-	my $file = ((scalar @_ > 0) && ($_[0])) ? shift : $DEF;
+	my $file = ((scalar @_ > 0) && ($_[0])) ? shift : $DEFAULT;
 
 	if ($file)
 	{

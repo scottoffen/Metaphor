@@ -28,25 +28,31 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Service Initialization                                                           #
 #----------------------------------------------------------------------------------#
+our ($QUERY, $PARSERS);
 BEGIN
 {
 	#----------------------------------------------------------------------------------#
 	# Try to use CGI::Simple, fallback on CGI.pm, croak if everything fails            #
 	#----------------------------------------------------------------------------------#
-	$ENV{'CGI'} = do
+	$Metaphor::Scripting::QUERY = do
 	{
+		my $cgi;
+
 		eval { require CGI::Simple };
 
 		if ($@)
 		{
 			eval { require CGI; import CGI(":standard") };
 			croak "Unable to load CGI or CGI::Simple : $@" if ($@);
-			new CGI();
+			$cgi = new CGI();
 		}
 		else
 		{
-			new CGI::Simple();
+			$cgi = new CGI::Simple();
+			$cgi->parse_query_string();
 		}
+
+		$cgi;
 	};
 	#----------------------------------------------------------------------------------#
 
@@ -117,7 +123,7 @@ BEGIN
 			}
 		}
 
-		$ENV{'PARSERS'} = \%Parsers;
+		$PARSERS = \%Parsers;
 	}
 	#----------------------------------------------------------------------------------#
 
@@ -138,6 +144,7 @@ BEGIN
 		{
 			unless (ref $ENV{$key})
 			{
+				next if (ref $ENV{$key});
 				$ENV{$key} = $1 if ($ENV{$key} =~ /^(.*)$/)
 			}
 		}
@@ -150,7 +157,7 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our $MODE   = ($ENV{'CGI'}->param('mode')) ? $ENV{'CGI'}->param('mode') : 0;
+	our $MODE   = ($QUERY->param('mode')) ? $QUERY->param('mode') : 0;
 	our @EXPORT = qw(GetContent NegotiateType SetContent $MODE);
 
 	#----------------------------------------------------------------------------------#
@@ -188,12 +195,12 @@ sub GetContent
 		#------------------------------------------------------------------------------------#
 		# Url encoded or multipart form data                                                 #
 		#------------------------------------------------------------------------------------#
-		if ((!$ENV{'CONTENT_TYPE'}) || ($ENV{'CONTENT_TYPE'} =~ /^(application\/x-www-form-urlencoded|multipart\/form-data).*$/i))
+		if ((!$ENV{CONTENT_TYPE}) || ($ENV{CONTENT_TYPE} =~ /^(application\/x-www-form-urlencoded|multipart\/form-data).*$/i))
 		{
-			my @keys = $ENV{CGI}->param;
+			my @keys = $QUERY->param;
 			foreach my $key (@keys)
 			{
-				$CONTENT->{$key} = $ENV{CGI}->param($key);
+				$CONTENT->{$key} = $QUERY->param($key);
 			}
 		}
 		#------------------------------------------------------------------------------------#
@@ -204,16 +211,16 @@ sub GetContent
 		#------------------------------------------------------------------------------------#
 		else
 		{
-			my $data = $ENV{CGI}->param('POSTDATA');
+			my $data = ($ENV{REQUEST_METHOD} =~ /PUT/i) ? $QUERY->param('PUTDATA') : $QUERY->param('POSTDATA');
 
 			#------------------------------------------------------------------------------------#
 			# JSON                                                                               #
 			#------------------------------------------------------------------------------------#
-			if ($ENV{'CONTENT_TYPE'} =~ /(json|javascript)$/i)
+			if ($ENV{CONTENT_TYPE} =~ /(json|javascript)$/i)
 			{
 				try
 				{
-					if ($ENV{'PARSERS'}->{JSON})
+					if ($PARSERS->{JSON})
 					{
 						$CONTENT = decode_json($data);
 					}
@@ -233,11 +240,11 @@ sub GetContent
 			#------------------------------------------------------------------------------------#
 			# XML                                                                                #
 			#------------------------------------------------------------------------------------#
-			elsif ($ENV{'CONTENT_TYPE'} =~ /xml$/i)
+			elsif ($ENV{CONTENT_TYPE} =~ /xml$/i)
 			{
 				try
 				{
-					if ($ENV{'PARSERS'}->{XML})
+					if ($PARSERS->{XML})
 					{
 						$CONTENT = XMLin($data);
 					}
@@ -257,11 +264,11 @@ sub GetContent
 			#------------------------------------------------------------------------------------#
 			# YAML via YAML::Any                                                                 #
 			#------------------------------------------------------------------------------------#
-			elsif ($ENV{'CONTENT_TYPE'} =~ /yaml$/i)
+			elsif ($ENV{CONTENT_TYPE} =~ /yaml$/i)
 			{
 				try
 				{
-					if ($ENV{'PARSERS'}->{YAML})
+					if ($PARSERS->{YAML})
 					{
 						$CONTENT = Load($data);
 					}
@@ -314,15 +321,15 @@ sub SetContent
 		# Send the data                                                                      #
 		#------------------------------------------------------------------------------------#
 		{
-			if (($type =~ /json$/i) && ($ENV{PARSERS}->{JSON}))
+			if (($type =~ /json$/i) && ($PARSERS->{JSON}))
 			{
 				print encode_json($data);
 			}
-			elsif (($type =~ /xml$/i) && ($ENV{PARSERS}->{XML}))
+			elsif (($type =~ /xml$/i) && ($PARSERS->{XML}))
 			{
 				print XMLout($data);
 			}
-			elsif (($type =~ /yaml$/i) && ($ENV{PARSERS}->{YAML}))
+			elsif (($type =~ /yaml$/i) && ($PARSERS->{YAML}))
 			{
 				print Dump($data);
 			}
@@ -378,7 +385,7 @@ sub NegotiateType
 	#------------------------------------------------------------------------------------#
 	if (!defined $type)
 	{
-		my @accept = split(',', $ENV{'HTTP_ACCEPT'});
+		my @accept = split(',', $ENV{HTTP_ACCEPT});
 		foreach my $accept (sort @accept)
 		{
 			foreach my $key (sort {uc($a) cmp uc($b)} keys %$TYPES)
@@ -402,3 +409,57 @@ sub NegotiateType
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Metaphor::REST
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+Only public methods are documented.  Use undocumented methods at your own risk.
+
+=head3 Exported Methods
+
+=over 4
+
+=item C<Method(PARAM)>
+
+=back
+
+=head1 AUTHOR
+
+(c) Copyright 2011-2014 Scott Offen (L<http://www.scottoffen.com/>)
+
+=head1 DEPENDENCIES
+
+=over 1
+
+=item * L<Metaphor::Config|https://github.com/scottoffen/common-perl/wiki/Metaphor::Config>
+
+=item * L<Metaphor::Logging|https://github.com/scottoffen/common-perl/wiki/Metaphor::Logging>
+
+=item * L<Metaphor::Storage|https://github.com/scottoffen/common-perl/wiki/Metaphor::Storage>
+
+=item * L<Metaphor::Util|https://github.com/scottoffen/common-perl/wiki/Metaphor::Util>
+
+=item * L<Encode|http://perldoc.perl.org/Encode.html>
+
+=item * L<Mail::RFC822::Address|https://github.com/scottoffen/common-perl/blob/master/Mail/RFC822/Address.pm>
+
+=item * L<MIME::Base64|http://perldoc.perl.org/MIME/Base64.html>
+
+=item * L<Net::SMTP|http://perldoc.perl.org/Net/SMTP.html>
+
+=item * L<Time::Local|http://perldoc.perl.org/Time/Local.html>
+
+=back
+
+=cut

@@ -26,18 +26,11 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
+	our $DBHANDLES = {};
 	our @EXPORT    = qw(Fetch Execute);
-	our @EXPORT_OK = @EXPORT;
 	our $CONFIG    = GetConfig()->{'database'};
 	our @ERRORS    = ();
-	our $DEF       = 'default';
-	our $KEY       = '_DBH';
-	$ENV{$KEY}     = {};
-
-	our %EXPORT_TAGS =
-	(
-		'all' => [qw(Fetch Execute)]
-	);
+	our $DEFAULT   = 'default';
 #----------------------------------------------------------------------------------#
 
 
@@ -46,9 +39,9 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 END
 {
-	foreach my $key (keys %{$ENV{$KEY}})
+	foreach my $key (keys %{$DBHANDLES})
 	{
-		$ENV{$KEY}->{$key}->disconnect();
+		$DBHANDLES->{$key}->disconnect();
 	}
 }
 #----------------------------------------------------------------------------------#
@@ -86,7 +79,7 @@ sub AddConnection
 #----------------------------------------------------------------------------------#
 sub Connect
 {
-	my $database = (scalar @_ > 0) ? shift : $DEF;
+	my $database = (scalar @_ > 0) ? shift : $DEFAULT;
 	my $params   = (exists $CONFIG->{$database}) ? $CONFIG->{$database} : (ref $database eq 'HASH') ? $database : undef;
 
 	if (ref $database eq 'HASH')
@@ -112,7 +105,7 @@ sub Connect
 				}
 				else
 				{
-					$ENV{$KEY}->{$database} = $dbh;
+					$DBHANDLES->{$database} = $dbh;
 					return $dbh;
 				}
 			}
@@ -257,11 +250,11 @@ sub Fetch
 #----------------------------------------------------------------------------------#
 sub GetConnection
 {
-	my $database = ((scalar @_ > 0) && (defined $_[0])) ? shift : $DEF;
+	my $database = ((scalar @_ > 0) && (defined $_[0])) ? shift : $DEFAULT;
 
-	if (exists $ENV{$KEY}->{$database})
+	if (exists $DBHANDLES->{$database})
 	{
-		return $ENV{$KEY}->{$database};
+		return $DBHANDLES->{$database};
 	}
 	else
 	{
@@ -291,13 +284,13 @@ sub RemoveConnection
 	my $class = shift;
 	my $value = ((scalar @_ > 0) & (defined $_[0])) ? shift : undef;
 
-	if ((defined $value) && ($DEF ne $value) && (exists $CONFIG->{$value}))
+	if ((defined $value) && ($DEFAULT ne $value) && (exists $CONFIG->{$value}))
 	{
 		delete $CONFIG->{$value};
-		if (exists $ENV{$KEY}->{$value})
+		if (exists $DBHANDLES->{$value})
 		{
-			close $ENV{$KEY}->{$value};
-			delete $ENV{$KEY}->{$value};
+			close $DBHANDLES->{$value};
+			delete $DBHANDLES->{$value};
 		}
 	}
 }
@@ -315,7 +308,7 @@ sub SetDefault
 
 	if ((defined $value) && (exists $CONFIG->{$value}))
 	{
-		$DEF = $value;
+		$DEFAULT = $value;
 	}
 }
 #########################################||#########################################
