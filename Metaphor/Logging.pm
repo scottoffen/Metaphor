@@ -381,12 +381,10 @@ sub GetDetails
 #----------------------------------------------------------------------------------#
 sub StartLog
 {
-	$LOGGERS  = {} unless (defined $LOGGERS);
-
-	my $class   = shift();
-	my $params  = ((@_) && (ref $_[0] eq 'HASH')) ? shift : {};
-	my $logdir  = (defined $params->{path}) ? $params->{path} : (defined $LOGDIR) ? $LOGDIR : undef;
-	my $error   = "!Log path undefined";
+	my $class  = shift();
+	my $params = ((@_) && (ref $_[0] eq 'HASH')) ? shift : {};
+	my $logdir = (defined $params->{path}) ? $params->{path} : (defined $LOGDIR) ? $LOGDIR : undef;
+	my $error  = "!Log path undefined";
 
 	if ($logdir)
 	{

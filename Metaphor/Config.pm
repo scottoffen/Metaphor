@@ -89,8 +89,7 @@ sub LoadJson
 
 	try
 	{
-		$data = decode_json($data);
-		return $data;
+		return decode_json($data);
 	}
 	catch
 	{
