@@ -167,9 +167,12 @@ sub Respond($)
 		$params->{'-status'}  = "200 Success" unless ($params->{'-status'});
 		$params->{'-charset'} = "ISO-8859-1" unless ($params->{'-charset'});
 
-		$Metaphor::Scripting::QUERY->no_cache(1);
-		print $Metaphor::Scripting::QUERY->header($params);
+		if ($Metaphor::Scripting::QUERY->can("no_cache"))
+		{
+			$Metaphor::Scripting::QUERY->no_cache(1);
+		}
 
+		print $Metaphor::Scripting::QUERY->header($params);
 		SetContent($content, $params->{'-type'});
 	}
 	else

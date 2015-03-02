@@ -66,7 +66,7 @@ BEGIN
 			'JSON' =>
 			{
 				'default' => 'JSON::MaybeXS',
-				'modules' => [ 'JSON::Any', 'JSON::XS' , 'JSON::PP' ]
+				'modules' => [ 'JSON::XS' , 'JSON::PP' ]
 			},
 
 			'YAML' =>
@@ -323,7 +323,15 @@ sub SetContent
 		{
 			if (($type =~ /json$/i) && ($PARSERS->{JSON}))
 			{
-				print encode_json($data);
+				try
+				{
+					print encode_json($data);
+				}
+				catch
+				{
+					my $error = "(json) " . $PARSERS->{JSON} . " : $_";
+					DEBUG($error);
+				}
 			}
 			elsif (($type =~ /xml$/i) && ($PARSERS->{XML}))
 			{
