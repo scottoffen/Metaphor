@@ -1,8 +1,6 @@
 #!/usr/bin/perl
-#!C:\lang\perl\bin\perl.exe
 use strict;
 use warnings;
-use CGI::Carp qw(fatalsToBrowser);
 
 #----------------------------------------------------------------------------------#
 # Initialization                                                                   #
@@ -10,7 +8,7 @@ use CGI::Carp qw(fatalsToBrowser);
 BEGIN
 {
 	$| = 1;
-	unshift(@INC, 'c:/source/github/metaphor');
+	push(@INC, 'c:/source/github/metaphor');
 }
 #----------------------------------------------------------------------------------#
 

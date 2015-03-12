@@ -17,6 +17,7 @@ our $VERSION = '1.0';
 	use Metaphor::Logging;
 	use Metaphor::Util;
 	use Scalar::Util qw(blessed);
+	use parent qw(Metaphor::Simplify);
 #----------------------------------------------------------------------------------#
 
 
@@ -27,6 +28,7 @@ our $VERSION = '1.0';
 	our @FIELDS = qw(Id );
 	our $FIELDS = join(', ', map{ "$TABLE.$_" } @FIELDS);
 	our $GUID   = '[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}';
+	our $EMAIL  = '[a-z0-9._%+-]+@(?:[a-z0-9-]+\.)+[a-z]{2,4}';
 	our $BOOL   = '(1|0|true|false)';
 	our $TEXT   = '.{1,50}';
 #----------------------------------------------------------------------------------#
@@ -230,6 +232,7 @@ sub Name
 			$self->{Changes}->{Name} = 1;
 		}
 	}
+
 	return $self->{Name};
 }
 #########################################||#########################################
@@ -240,8 +243,8 @@ sub Name
 sub Save
 {
 	my ($self, $newid) = @_;
-	my $result = 0;
 	my ($query, @bindings);
+	my $result = 0;
 
 	#----------------------------------------------------------------------------------#
 	# SQL : Update                                                                     #
@@ -263,7 +266,7 @@ sub Save
 		if (scalar @changes > 0)
 		{
 			push (@bindings, $self->{Id});
-			$query  = "update $TABLE set " . (join(', ', @changes)) . " where Id = ?"
+			$query  = "update $TABLE set " . (join(', ', @changes)) . " where Id = ?";
 			$result = Execute($query, \@bindings);
 		}
 	}
@@ -371,7 +374,7 @@ sub List
 
 	$params = {} unless (ref $params eq 'HASH');
 	{
-		my ($fields, @fields, @tables, @conditions, @orderby, $query, @bindings);
+		my ($fields, @fields, @tables, @conditions, @orderby, $query, @bindings, $limit);
 
 		#----------------------------------------------------------------------------------#
 		# Define base query                                                                #
@@ -399,6 +402,7 @@ sub List
 		$query = "select $fields\nfrom " . join(', ', @tables) . "\nwhere " . join("\n  and ", @conditions) . "\norder by " . join(', ', @orderby);
 		$query =~ s/\nwhere \norder by/\norder by/i;
 		$query =~ s/\norder by $//i;
+		$query .= " limit $limit" if ((defined $limit) && ($limit =~ /^\d+$/));
 		#----------------------------------------------------------------------------------#
 
 
