@@ -269,6 +269,11 @@ sub Save
 			$query  = "update $TABLE set " . (join(', ', @changes)) . " where Id = ?";
 			$result = Execute($query, \@bindings);
 		}
+		else
+		{
+			# It's not dirty, nothing to update, save an database call!
+			$result = 1;
+		}
 	}
 	#----------------------------------------------------------------------------------#
 
