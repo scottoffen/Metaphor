@@ -167,6 +167,7 @@ BEGIN
 	{
 		'default' => 'application/json',
 		'text'    => 'text/plain',
+		'html'    => 'text/html',
 		'json'    => 'application/json',
 		'xml'     => 'text/xml',
 		'appxml'  => 'application/xml',
@@ -341,6 +342,10 @@ sub SetContent
 			{
 				print Dump($data);
 			}
+			elsif ($type =~ /^text/i)
+			{
+				print $data;
+			}
 			else
 			{
 				$data = Dumper($data);
@@ -362,7 +367,6 @@ sub NegotiateType
 {
 	my ($type) = @_;
 
-
 	#------------------------------------------------------------------------------------#
 	# Check for type in cannon                                                           #
 	#------------------------------------------------------------------------------------#
@@ -379,6 +383,10 @@ sub NegotiateType
 		elsif ($type =~ /yaml$/i)
 		{
 			$type = ($type =~ /^app/i) ? $TYPES->{'appyaml'} : $TYPES->{'yaml'};
+		}
+		elsif ($type =~ /^text/i)
+		{
+			$type = ($type =~ /html$/i) ? $TYPES->{'html'} : $TYPES->{'text'};
 		}
 		else
 		{

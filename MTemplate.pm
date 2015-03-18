@@ -1,9 +1,9 @@
-package Template;
+package ModuleTemplate;
 our $VERSION = '1.0';
 
 #########################################||#########################################
 #                                                                                  #
-# Template                                                                         #
+# ModuleTemplate                                                                   #
 # © Copyright YYYY Copyright Holder                                                #
 #                                                                                  #
 #########################################||#########################################
@@ -243,7 +243,7 @@ sub Name
 sub Save
 {
 	my ($self, $newid) = @_;
-	my ($query, @bindings);
+	my ($query, @bindings); # declared here in case you want to use them in post-exe
 	my $result = 0;
 
 	#----------------------------------------------------------------------------------#
@@ -251,6 +251,9 @@ sub Save
 	#----------------------------------------------------------------------------------#
 	if ($self->{Id})
 	{
+		# Let's just assume the record isn't dirty
+		$result = 1;
+
 		my @changes;
 
 		foreach my $key (keys %{$self->{Changes}})
@@ -269,11 +272,6 @@ sub Save
 			$query  = "update $TABLE set " . (join(', ', @changes)) . " where Id = ?";
 			$result = Execute($query, \@bindings);
 		}
-		else
-		{
-			# It's not dirty, nothing to update, save an database call!
-			$result = 1;
-		}
 	}
 	#----------------------------------------------------------------------------------#
 
@@ -283,6 +281,7 @@ sub Save
 	#----------------------------------------------------------------------------------#
 	if ($result == 0)
 	{
+		# This line assumes an Id needs to be generated
 		$self->{Id} = (IsGuid($newid)) ? $newid : (IsGuid($self->{NewId})) ? $self->{NewId} : CreateGuid();
 		@bindings   = ();
 
@@ -434,7 +433,7 @@ sub List
 
 __END__
 
-Include the table definition used by this module here
+Include the table definition used by this module here, followed by POD
 
 =pod
 

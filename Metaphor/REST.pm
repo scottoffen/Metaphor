@@ -183,48 +183,56 @@ sub Respond($)
 #########################################||#########################################
 
 
+
+##############################|     die Handler     |###############################
+$SIG{__DIE__} = sub
+{
+	my ($ERROR) = @_;
+
+	if ($Metaphor::Scripting::QUERY->can("no_cache"))
+	{
+		$Metaphor::Scripting::QUERY->no_cache(1);
+	}
+
+	#----------------------------------------------------------------------------------#
+	# Handle barfing                                                                   #
+	#----------------------------------------------------------------------------------#
+	if (ref $ERROR and reftype $ERROR eq 'HASH')
+	{
+		print $Metaphor::Scripting::QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
+		print mkerror($ERROR->{message});
+	}
+	#----------------------------------------------------------------------------------#
+
+
+	#----------------------------------------------------------------------------------#
+	# Handle anything else
+	#----------------------------------------------------------------------------------#
+	else
+	{
+		print $Metaphor::Scripting::QUERY->header( -status => 500, -type => 'text/html' );
+		print mkerror("<p>$ERROR</p>", 'Server Error');
+	}
+	#----------------------------------------------------------------------------------#
+
+	$STATE = 2;
+};
+#########################################||#########################################
+
+
+
 #----------------------------------------------------------------------------------#
 # Service Cleanup                                                                  #
 #----------------------------------------------------------------------------------#
 END
 {
-	if ((1 > $STATE) || ($STATE > 2)) # Didn't match or errored on execution
+	if ((1 > $STATE) || ($STATE > 2)) # Didn't match
 	{
-		print "Cache-Control: no-store, must-revalidate\n";
-
 		#----------------------------------------------------------------------------------#
 		# Handle Errors                                                                    #
 		#----------------------------------------------------------------------------------#
-		if ($@)
-		{
-			my $ERROR = $@;
-
-			#----------------------------------------------------------------------------------#
-			# Handle barfing                                                                   #
-			#----------------------------------------------------------------------------------#
-			if (ref $@ and reftype $@ eq 'HASH')
-			{
-				print $Metaphor::Scripting::QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
-				print mkerror($ERROR->{message});
-			}
-			#----------------------------------------------------------------------------------#
-
-
-			#----------------------------------------------------------------------------------#
-			# Handle anything else
-			#----------------------------------------------------------------------------------#
-			else
-			{
-				print $Metaphor::Scripting::QUERY->header( -status => 500, -type => 'text/html' );
-				print mkerror("<p>$ERROR</p>", 'Server Error');
-			}
-			#----------------------------------------------------------------------------------#
-		}
-		else
-		{
-			print $Metaphor::Scripting::QUERY->header(-status => 501, -type => 'text/html');
-			print mkerror('<h1>Not Implemented</h1><i>' . $Metaphor::Scripting::QUERY->request_method() . ' : ' . $Metaphor::Scripting::QUERY->self_url() . '</i>', 'Server Error');
-		}
+		print $Metaphor::Scripting::QUERY->header(-status => 501, -type => 'text/html');
+		print mkerror('<h1>Not Implemented[' . $! . ']</h1><i>' . $Metaphor::Scripting::QUERY->request_method() . ' : ' . $Metaphor::Scripting::QUERY->self_url() . '</i>', 'Server Error');
 		#----------------------------------------------------------------------------------#
 	}
 }

@@ -1,9 +1,10 @@
-package VTemplate;
+package VerticalTemplate;
 our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
-# VTemplate                                                                        #
+# VerticalTemplate                                                                 #
+# © Copyright YYYY Copyright Holder                                                #
 #                                                                                  #
 #########################################||#########################################
 
@@ -198,7 +199,9 @@ sub Fields
 
 1;
 
-Include the table definition used by this module here
+__END__
+
+Include the table definition used by this module here, followed by POD
 
 =pod
 
