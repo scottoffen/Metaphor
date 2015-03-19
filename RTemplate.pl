@@ -8,7 +8,7 @@ use warnings;
 BEGIN
 {
     $| = 1;
-    push(@INC, '/home/orioncom/legacy/modules');
+    push(@INC, '/home/path/to/modules');
 }
 #----------------------------------------------------------------------------------#
 
