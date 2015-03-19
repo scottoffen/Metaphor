@@ -4,7 +4,7 @@ our $VERSION = '1.0.0';
 #########################################||#########################################
 #                                                                                  #
 # Metaphor::REST                                                                   #
-# © Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
+# Â© Copyright 2011-2014 Scott Offen (http://www.scottoffen.com)                    #
 #                                                                                  #
 #########################################||#########################################
 
@@ -67,6 +67,7 @@ sub barf
 
 	die
 	{
+		barf    => 1,
 		status  => $status,
 		message => $message
 	};
@@ -189,33 +190,36 @@ $SIG{__DIE__} = sub
 {
 	my ($ERROR) = @_;
 
-	if ($Metaphor::Scripting::QUERY->can("no_cache"))
+	if ((ref $ERROR eq 'HASH') && ($ERROR->{barf}))
 	{
-		$Metaphor::Scripting::QUERY->no_cache(1);
+		if ($Metaphor::Scripting::QUERY->can("no_cache"))
+		{
+			$Metaphor::Scripting::QUERY->no_cache(1);
+		}
+	
+		#----------------------------------------------------------------------------------#
+		# Handle barfing                                                                   #
+		#----------------------------------------------------------------------------------#
+		if (ref $ERROR and reftype $ERROR eq 'HASH')
+		{
+			print $Metaphor::Scripting::QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
+			print mkerror($ERROR->{message});
+		}
+		#----------------------------------------------------------------------------------#
+	
+	
+		#----------------------------------------------------------------------------------#
+		# Handle anything else
+		#----------------------------------------------------------------------------------#
+		else
+		{
+			print $Metaphor::Scripting::QUERY->header( -status => 500, -type => 'text/html' );
+			print mkerror("<p>$ERROR</p>", 'Server Error');
+		}
+		#----------------------------------------------------------------------------------#
+	
+		$STATE = 2;
 	}
-
-	#----------------------------------------------------------------------------------#
-	# Handle barfing                                                                   #
-	#----------------------------------------------------------------------------------#
-	if (ref $ERROR and reftype $ERROR eq 'HASH')
-	{
-		print $Metaphor::Scripting::QUERY->header( -status => $ERROR->{status}, -type => 'text/html' );
-		print mkerror($ERROR->{message});
-	}
-	#----------------------------------------------------------------------------------#
-
-
-	#----------------------------------------------------------------------------------#
-	# Handle anything else
-	#----------------------------------------------------------------------------------#
-	else
-	{
-		print $Metaphor::Scripting::QUERY->header( -status => 500, -type => 'text/html' );
-		print mkerror("<p>$ERROR</p>", 'Server Error');
-	}
-	#----------------------------------------------------------------------------------#
-
-	$STATE = 2;
 };
 #########################################||#########################################
 
