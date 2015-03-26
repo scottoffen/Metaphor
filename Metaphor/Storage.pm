@@ -47,7 +47,7 @@ sub CreateFolder
 	#----------------------------------------------------------------------------------#
 	# Immediate returns if there is no folder or if the folder already exists.         #
 	#----------------------------------------------------------------------------------#
-	return undef unless ($folder);
+	return unless ($folder);
 	return $folder if (-d $folder);
 	#----------------------------------------------------------------------------------#
 
@@ -107,7 +107,7 @@ sub DeleteFolder
 	#----------------------------------------------------------------------------------#
 	# Immediate returns if there is no folder or if the folder does not exists.        #
 	#----------------------------------------------------------------------------------#
-	return undef unless (($folder) && (-e $folder) && (-d $folder));
+	return unless (($folder) && (-e $folder) && (-d $folder));
 	#----------------------------------------------------------------------------------#
 
 

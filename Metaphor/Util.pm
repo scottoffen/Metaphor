@@ -355,7 +355,7 @@ sub CompareString
 {
 	my @params = Declassify(\@_);
 	my ($x, $y) = map {lc} @params;
-	return undef unless (($x) && ($y));
+	return unless (($x) && ($y));
 	return ($x gt $y) ? 1 : ($x lt $y) ? -1 : 0;
 }
 #########################################||#########################################

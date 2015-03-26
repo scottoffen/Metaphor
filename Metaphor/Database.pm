@@ -119,7 +119,7 @@ sub Connect
 
 	ERROR("No connection available for $database");
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
@@ -229,7 +229,14 @@ sub Fetch
 			{
 				if (scalar @rows == 0)
 				{
-					return (wantarray) ? () : undef;
+					if (wantarray)
+					{
+						return ();
+					}
+					else
+					{
+						return;
+					}
 				}
 				elsif (wantarray)
 				{
@@ -247,7 +254,7 @@ sub Fetch
 		}
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
@@ -278,7 +285,12 @@ sub GetConnection
 #----------------------------------------------------------------------------------#
 sub GetLastError
 {
-	return (scalar @ERRORS > 0) ? pop(@ERRORS) : undef;
+	if (scalar @ERRORS > 0)
+	{
+		return pop(@ERRORS);
+	}
+
+	return;
 }
 #########################################||#########################################
 

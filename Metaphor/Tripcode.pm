@@ -101,7 +101,7 @@ sub GetTripcode
 		return "$username$seperator" . (substr(crypt(join('', @password), $salt), -10));
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 

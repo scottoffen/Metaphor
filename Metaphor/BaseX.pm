@@ -84,7 +84,7 @@ sub new
 	else
 	{
 		ERROR("Insufficient characters provided to create BaseX");
-		return undef;
+		return;
 	}
 	#----------------------------------------------------------------------------------#
 }
@@ -173,7 +173,7 @@ sub GetCharacterSet
 		return @unique;
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 

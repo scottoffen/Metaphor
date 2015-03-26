@@ -131,7 +131,7 @@ sub AddAccount
 			if ($missing > 0)
 			{
 				ERROR("Unable to connect to smtp $label : missing $missing configuration parameters (" . join(', ', @missing) . ").");
-				return undef;
+				return;
 			}
 			else
 			{
@@ -145,7 +145,7 @@ sub AddAccount
 		return $label;
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
@@ -177,7 +177,7 @@ sub AttachFile
 		}
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
@@ -272,7 +272,7 @@ sub Connect
 		WARN("Unable to establish an smtp connection to " . $account->{mailhost});
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
@@ -354,7 +354,7 @@ sub GetConnection
 	}
 	#----------------------------------------------------------------------------------#
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
@@ -437,7 +437,7 @@ sub SendEmail
 			else
 			{
 				WARN("Can't send from " . $account->{address} . " : $!");
-				return undef;
+				return;
 			}
 			#----------------------------------------------------------------------------------#
 
@@ -452,7 +452,7 @@ sub SendEmail
 			if (!($smtp->recipient(MergeRecipients($to, $cc, $bcc))))
 			{
 				WARN ("Unable to set email recipients : $!");
-				return undef;
+				return;
 			}
 
 			$headers->{'To'} = FormattAddresses($to);
@@ -546,7 +546,7 @@ sub SendEmail
 			else
 			{
 				WARN("SMTP refused data : $!");
-				return undef;
+				return;
 			}
 		}
 		#----------------------------------------------------------------------------------#
@@ -556,7 +556,7 @@ sub SendEmail
 		return 1;
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
@@ -585,7 +585,7 @@ sub SendText
 		}
 	}
 
-	return undef;
+	return;
 }
 #########################################||#########################################
 
