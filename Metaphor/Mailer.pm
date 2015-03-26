@@ -53,7 +53,7 @@ package Metaphor::Mailer;
 	{
 		if (defined $ENV{'HTTP_HOST'})
 		{
-			my @httphost = split(/\./, $1) if ($ENV{'HTTP_HOST'} =~ /^(.+)$/i);
+			my @httphost = (($ENV{'HTTP_HOST'} =~ /^(.+)$/i)) ? split(/\./, $1) : ();
 			$HOST = join(".", ("mail", $httphost[-2], $httphost[-1]));
 		}
 	}

@@ -102,7 +102,7 @@ sub CreateFolder
 sub DeleteFolder
 {
 	my @params = Declassify(\@_, __PACKAGE__);
-	my $folder = $1 if ($params[0] =~ /^(.+)$/);
+	my $folder = ($params[0] =~ /^(.+)$/) ? $1 : undef;
 
 	#----------------------------------------------------------------------------------#
 	# Immediate returns if there is no folder or if the folder does not exists.        #
