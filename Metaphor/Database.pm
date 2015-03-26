@@ -141,8 +141,12 @@ sub Execute
 
 		if ($dbh)
 		{
-			DEBUG("Query    : $query");
-			DEBUG("Bindings : " . join(", ", @$bindings));
+			{
+				# because sometimes there are no bindings
+				no warnings 'uninitialized';
+				DEBUG("Query    : $query");
+				DEBUG("Bindings : " . join(", ", @$bindings));
+			}
 
 			my $sth = $dbh->prepare($query);
 
@@ -191,8 +195,12 @@ sub Fetch
 
 		if ($dbh)
 		{
-			DEBUG("Query    : $query");
-			DEBUG("Bindings : " . join(", ", @$bindings));
+			{
+				# because sometimes there are no bindings
+				no warnings 'uninitialized';
+				DEBUG("Query    : $query");
+				DEBUG("Bindings : " . join(", ", @$bindings));
+			}
 
 			my @rows = ();
 			my $sth = $dbh->prepare($query);
