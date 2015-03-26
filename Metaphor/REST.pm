@@ -100,7 +100,7 @@ sub mkerror
 # 0 : Request state to match (hash of arrays where the key is the ENV key)         #
 # 1 : Code to execute if headers match                                             #
 #----------------------------------------------------------------------------------#
-sub Route($$)
+sub Route
 {
 	$STATE = 0;
 
@@ -155,7 +155,7 @@ sub Route($$)
 #################################|     Respond     |################################
 # Exported                                                                         #
 #----------------------------------------------------------------------------------#
-sub Respond($)
+sub Respond
 {
 	my ($params) = @_;
 
