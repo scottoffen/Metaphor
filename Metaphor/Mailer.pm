@@ -1,5 +1,4 @@
 package Metaphor::Mailer;
-our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
@@ -12,9 +11,9 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Module Initialization                                                            #
 #----------------------------------------------------------------------------------#
-BEGIN
-{
-}
+# BEGIN
+# {
+# }
 #----------------------------------------------------------------------------------#
 
 
@@ -39,12 +38,13 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our @EXPORT    = qw(SendText SendEmail);
-	our $MAILER    = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
-	our $LISTS     = $MAILER->{"lists"}      || {};
-	our $SMTP      = {};
-	our $ACCOUNTS  = {};
-	our $DEFAULT   = undef;
+	our $VERSION  = '1.0.0';
+	our @EXPORT   = qw(SendText SendEmail);
+	our $MAILER   = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
+	our $LISTS    = $MAILER->{"lists"}      || {};
+	our $SMTP     = {};
+	our $ACCOUNTS = {};
+	our $DEFAULT  = undef;
 
 	#----------------------------------------------------------------------------------#
 	# Create default host                                                              #

@@ -1,5 +1,4 @@
 package Metaphor::Storage;
-our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
@@ -24,8 +23,9 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables and Exports                                                     #
 #----------------------------------------------------------------------------------#
-	our @EXPORT    = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64);
-	our @EXPORT_OK = @EXPORT;
+	our $VERSION     = '1.0.0';
+	our @EXPORT      = qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64);
+	our @EXPORT_OK   = @EXPORT;
 	our %EXPORT_TAGS =
 	(
 		'all'     => [qw(CreateFolder DeleteFolder DownloadFile GetFileName GetFilePath GetListing GetFileAsBase64)],

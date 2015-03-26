@@ -1,5 +1,4 @@
 package Metaphor::Logging;
-our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
@@ -28,6 +27,7 @@ our $VERSION = '1.0.0';
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
+	our $VERSION    = '1.0.0';
 	our @EXPORT     = qw(FATAL ERROR WARN INFO DEBUG TRACE);
 	our $LOGDIR     = (GetConfig()->{'logging'}) ? GetConfig()->{'logging'}->{'dir'} : undef;
 	our $CONSOLE    = 0;

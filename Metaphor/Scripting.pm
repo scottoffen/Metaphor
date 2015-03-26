@@ -1,5 +1,4 @@
 package Metaphor::Scripting;
-our $VERSION = '1.0.0';
 
 #########################################||#########################################
 #                                                                                  #
@@ -157,8 +156,9 @@ BEGIN
 #----------------------------------------------------------------------------------#
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
-	our $MODE   = ($QUERY->param('mode')) ? $QUERY->param('mode') : 0;
-	our @EXPORT = qw(GetContent NegotiateType SetContent $MODE);
+	our $VERSION = '1.0.0';
+	our $MODE    = ($QUERY->param('mode')) ? $QUERY->param('mode') : 0;
+	our @EXPORT  = qw(GetContent NegotiateType SetContent $MODE);
 
 	#----------------------------------------------------------------------------------#
 	# Content-type definitions                                                         #
