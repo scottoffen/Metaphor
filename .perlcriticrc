@@ -1,0 +1,10 @@
+severity = 4
+
+
+[-Subroutines::RequireArgUnpacking]
+
+[-TestingAndDebugging::ProhibitNoWarnings]
+
+[-ValuesAndExpressions::ProhibitCommaSeparatedStatements]
+
+[-Modules::ProhibitAutomaticExportation]
