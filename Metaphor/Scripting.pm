@@ -43,11 +43,11 @@ BEGIN
 		{
 			eval { require CGI; import CGI(":standard") };
 			croak "Unable to load CGI or CGI::Simple : $@" if ($@);
-			$cgi = new CGI();
+			$cgi = CGI->new();
 		}
 		else
 		{
-			$cgi = new CGI::Simple();
+			$cgi = CGI::Simple->new();
 			$cgi->parse_query_string();
 		}
 

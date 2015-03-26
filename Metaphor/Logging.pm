@@ -405,7 +405,7 @@ sub StartLog
 			return $params->{'path'} if (exists $LOGGERS->{$params->{'path'}});
 
 			$params->{'path'} = $1 if ($params->{'path'} =~ /^(.+)$/);
-			$params->{'fh'} = new FileHandle(">> " . $params->{'path'}) || ($error = "!" . $!);
+			$params->{'fh'}   = FileHandle->new(">> " . $params->{'path'}) || ($error = "!" . $!);
 
 			unless ($error)
 			{

@@ -41,7 +41,7 @@ package Metaphor::Mailer;
 	our $VERSION  = '1.0.0';
 	our @EXPORT   = qw(SendText SendEmail);
 	our $MAILER   = GetConfig()->{'mailer'} || { "accounts" => {}, "lists" => {} };
-	our $LISTS    = $MAILER->{"lists"}      || {};
+	our $LISTS    = $MAILER->{"lists"};
 	our $SMTP     = {};
 	our $ACCOUNTS = {};
 	our $DEFAULT  = undef;
@@ -251,7 +251,7 @@ sub Connect
 {
 	my ($label) = @_;
 	my $account = $ACCOUNTS->{$label};
-	my $smtp    = new Net::SMTP($account->{mailhost});
+	my $smtp    = Net::SMTP->new($account->{mailhost});
 
 	if ($smtp)
 	{
