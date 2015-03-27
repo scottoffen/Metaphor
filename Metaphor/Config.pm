@@ -84,7 +84,9 @@ sub LoadJson
 	{
 		open(my $json_fh, "<:encoding(UTF-8)", $file);
 		local $/;
-		<$json_fh>
+		my $json = <$json_fh>;
+		close($json_fh);
+		$json;
 	};
 
 	try
