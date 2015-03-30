@@ -417,7 +417,7 @@ sub List
 		foreach my $row (@data)
 		{
 			my $record = {};
-			@$record{@FIELDS} = @$row;
+			@$record{@fields} = @$row;
 			push(@results, $record);
 		}
 		#----------------------------------------------------------------------------------#
