@@ -313,6 +313,8 @@ sub RemoveConnection
 			delete $DBHANDLES->{$value};
 		}
 	}
+
+	return;
 }
 #########################################||#########################################
 
@@ -330,6 +332,8 @@ sub SetDefault
 	{
 		$DEFAULT = $value;
 	}
+
+	return;
 }
 #########################################||#########################################
 
@@ -346,29 +350,26 @@ sub VerifyDbParams
 	#----------------------------------------------------------------------------------#
 	# Verify required parameters have been provided                                    #
 	#----------------------------------------------------------------------------------#
+	my @required = qw(host schema username password);
+	my $missing  = 0;
+	my @missing  = ();
+
+	foreach my $key (@required)
 	{
-		my @required = qw(host schema username password);
-		my $missing  = 0;
-		my @missing  = ();
-
-		foreach my $key (@required)
+		unless ((exists $params->{$key}) && (defined $params->{$key}))
 		{
-			unless ((exists $params->{$key}) && (defined $params->{$key}))
-			{
-				push (@missing, $key);
-				$missing++;
-			}
+			push (@missing, $key);
+			$missing++;
 		}
-
-		if ($missing > 0)
-		{
-			ERROR("Unable to connect to db $id : missing $missing configuration parameters (" . join(', ', @missing) . ").");
-			return 0;
-		}
-
-		return 1;
 	}
-	#----------------------------------------------------------------------------------#
+
+	if ($missing > 0)
+	{
+		ERROR("Unable to connect to db $id : missing $missing configuration parameters (" . join(', ', @missing) . ").");
+		return 0;
+	}
+
+	return 1;
 }
 #########################################||#########################################
 
