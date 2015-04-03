@@ -37,19 +37,25 @@ BEGIN
 	{
 		my $cgi;
 
-		eval { require CGI::Simple };
-
-		if ($@)
+		try
 		{
-			eval { require CGI; import CGI(":standard") };
-			croak "Unable to load CGI or CGI::Simple : $@" if ($@);
-			$cgi = CGI->new();
-		}
-		else
-		{
+			require CGI::Simple;
 			$cgi = CGI::Simple->new();
 			$cgi->parse_query_string();
 		}
+		catch
+		{
+			try
+			{
+				require CGI;
+				import CGI(":standard");
+				$cgi = CGI->new();
+			}
+			catch
+			{
+				croak "Unable to load CGI or CGI::Simple : $_";
+			};
+		};
 
 		$cgi;
 	};
@@ -87,38 +93,40 @@ BEGIN
 		{
 			my $val = $Parsers{$format};
 
-			eval
+			my $test = eval
 			{
 				load $val->{default};
 				$val->{default}->import();
+				1;
 			};
 
-			if ($@)
+			if ($test)
+			{
+				$Parsers{$format} = $val->{default};
+			}
+			else
 			{
 				foreach my $impl (@{$val->{modules}})
 				{
-					eval
+					$test = eval
 					{
 						load $impl;
 						$impl->import();
+						1;
 					};
 
-					unless ($@)
+					if ($test)
 					{
 						$Parsers{$format} = $impl;
 						last;
 					}
 				}
 
-				if ($@)
+				unless ($test)
 				{
 					$Parsers{$format} = 0;
-					warn("$format Support Not Detected!!");
+					carp("$format Support Not Detected!!");
 				}
-			}
-			else
-			{
-				$Parsers{$format} = $val->{default};
 			}
 		}
 
@@ -196,7 +204,8 @@ sub GetContent
 		#------------------------------------------------------------------------------------#
 		# Url encoded or multipart form data                                                 #
 		#------------------------------------------------------------------------------------#
-		if ((!$ENV{CONTENT_TYPE}) || ($ENV{CONTENT_TYPE} =~ /^(application\/x-www-form-urlencoded|multipart\/form-data).*$/i))
+		my $types = join('|', ("application\\/x-www-form-urlencoded", "multipart\\/form-data"));
+		if ((!$ENV{CONTENT_TYPE}) || ($ENV{CONTENT_TYPE} =~ /^($types).*$/i))
 		{
 			my @keys = $QUERY->param;
 			foreach my $key (@keys)

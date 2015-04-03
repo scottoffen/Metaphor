@@ -54,6 +54,17 @@ package Metaphor::Util;
 #----------------------------------------------------------------------------------#
 
 
+#----------------------------------------------------------------------------------#
+# Global GUID RegEx                                                                #
+#----------------------------------------------------------------------------------#
+	my $dash  = '\\-';
+	my $an4   = '[a-f0-9]{4}';
+	my $an8   = '[a-f0-9]{8}';
+	my $an12  = '[a-f0-9]{12}';
+	my $guidx = join($dash, ($an8, $an4, $an4, $an4, $an12));
+	our $GUID = qr{^/$guidx}i;
+#----------------------------------------------------------------------------------#
+
 ##############################|     Create Guid     |###############################
 # Exported                                                                         #
 #----------------------------------------------------------------------------------#
@@ -136,7 +147,7 @@ sub TrimString
 sub IsGuid
 {
 	my ($value) = Declassify(\@_);
-	my $result  = (($value) && ($value =~ /^[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}$/i)) ? 1 : 0;
+	my $result  = (($value) && ($value =~ $guid)) ? 1 : 0;
 
     return $result;
 }
@@ -151,7 +162,7 @@ sub IsGuid
 sub IsEmail
 {
 	my ($value) = Declassify(\@_);
-	my $result = (($value) && ($value =~ /^[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,4}$/)) ? 1 : 0;
+	my $result = (($value) && ($value =~ /^[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,4}$/x)) ? 1 : 0;
 
 	return $result;
 }
@@ -191,7 +202,7 @@ sub IsIPAddress
 
 	if (defined $value)
 	{
-		if ($value =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/i)
+		if ($value =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/xi)
 		{
 			my @octets = split('\.', $value);
 
@@ -266,7 +277,7 @@ sub IsNumber
 
 	if (defined $value)
 	{
-		if ($value =~ /^[\-\+]?\d+\.?\d*$/)
+		if ($value =~ /^[\-\+]?\d+\.?\d*$/x)
 		{
 			return 1;
 		}
@@ -312,7 +323,7 @@ sub IsPostalCode
 
 	if (defined $value)
 	{
-		if (($value =~ /^\d{5}(\-?\d{4})?$/) || ($value =~ /^[A-Z]\d[A-Z]\d[A-Z]\d$/i))
+		if (($value =~ /^\d{5}(\-?\d{4})?$/x) || ($value =~ /^[A-Z]\d[A-Z]\d[A-Z]\d$/xi))
 		{
 			return 1;
 		}
@@ -334,7 +345,7 @@ sub IsCreditCard
 
 	if (defined $value)
 	{
-		if (($value =~ /^\d{15,16}$/))
+		if (($value =~ /^\d{15,16}$/x))
 		{
 			return 1;
 		}

@@ -74,10 +74,10 @@ package Metaphor::Tripcode;
 sub GetTripcode
 {
 	my ($input, $seperator) = Declassify(\@_, __PACKAGE__);
-	if ($input =~ /^(.{1,})#(.{1,})$/)
+	if ($input =~ /^(.{1,})#(.{1,})$/x)
 	{
 		my ($username, $password) = ($1, $2);
-		$seperator = '!' unless (length $seperator > 0);
+		$seperator = '!' if (length $seperator < 1);
 
 		my $salt     = substr(($username . "H.."), 1,2);
 		my @password = split('', encode("shiftjis", $password));

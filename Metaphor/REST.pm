@@ -24,7 +24,7 @@ package Metaphor::REST;
 #----------------------------------------------------------------------------------#
 # Error Document Template                                                          #
 #----------------------------------------------------------------------------------#
-our $TEMPLATE = <<TEMPLATE;
+our $TEMPLATE = <<'TEMPLATE';
 <!doctype html>
 <html lang=en>
 	<head>

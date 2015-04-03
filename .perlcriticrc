@@ -1,4 +1,4 @@
-severity = 4
+severity = 3
 
 
 [-Subroutines::RequireArgUnpacking]
@@ -11,3 +11,9 @@ severity = 4
 
 [Variables::RequireLocalizedPunctuationVars]
 allow = %SIG %ENV
+
+[Variables::ProhibitPackageVars]
+packages = Data::Dumper File::Find FindBin Log::Log4perl DBI
+
+[ControlStructures::ProhibitCascadingIfElse]
+max_elsif = 5

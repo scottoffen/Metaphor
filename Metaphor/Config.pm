@@ -82,10 +82,15 @@ sub LoadJson
 
 	my $data = do
 	{
-		open(my $json_fh, "<:encoding(UTF-8)", $file);
-		local $/;
-		my $json = <$json_fh>;
-		close($json_fh);
+		my $json   = {};
+		my $opened = open(my $json_fh, "<:encoding(UTF-8)", $file);
+		if ($opened)
+		{
+			local $/ = undef;
+			$json = <$json_fh>;
+			close($json_fh);
+		}
+
 		$json;
 	};
 

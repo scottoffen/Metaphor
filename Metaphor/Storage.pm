@@ -158,11 +158,14 @@ sub DownloadFile
 		print "Content-Type:application/octet-stream\n";
 		print "Content-Disposition:attachment;filename=$file\n\n";
 
-		my $error = open my $fh, '<', $path;
-		flock($fh, LOCK_SH);
-		binmode($fh);
-		print <$fh>;
-		$error = close $fh;
+		my $opened = open my $fh, '<', $path;
+		if ($opened)
+		{
+			flock($fh, LOCK_SH);
+			binmode($fh);
+			print <$fh>;
+			close $fh;
+		}
 	}
 	else
 	{
@@ -186,13 +189,17 @@ sub GetFileAsBase64
 
 	if ((-e $file) && (!(-d $file)))
 	{
-		local $/ = undef;
+		my $d;
 
-		my $error = open my $fh, '<', $file;
-		flock($fh, LOCK_SH);
-		binmode($fh) unless (-T $file);
-		my $d = join('', <$fh>);
-		$error = close $fh;
+		my $opened = open my $fh, '<', $file;
+		if ($opened)
+		{
+			flock($fh, LOCK_SH);
+			binmode($fh) unless (-T $file);
+			local $/ = undef;
+			$d = <$fh>;
+			$error = close $fh;
+		}
 
 		$data = encode_base64($d);
 	}
