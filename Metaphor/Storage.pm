@@ -13,6 +13,7 @@ package Metaphor::Storage;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use English qw(-no_match_vars);
 	use MIME::Base64;
 	use Fcntl qw(:DEFAULT :flock);
 	use Metaphor::Util qw(Declassify);
@@ -33,6 +34,9 @@ package Metaphor::Storage;
 		'folders' => [qw(CreateFolder DeleteFolder GetListing)],
 		'web'     => [qw(DownloadFile GetFileAsBase64)]
 	);
+
+	our $EMPTY          = q{};
+	our $PATH_SEPARATOR = q{/};
 #----------------------------------------------------------------------------------#
 
 
@@ -68,7 +72,7 @@ sub CreateFolder
 	# in the array created in the previous step is a drive letter, and therefore pre-  #
 	# populates this in the return value and removes the first element from the array. #
 	#----------------------------------------------------------------------------------#
-	$path = ($^O =~ /^MSWin.+/i) ? shift(@path) : '';
+	$path = ($OSNAME =~ /^MSWin.+/i) ? shift(@path) : $EMPTY;
 	#----------------------------------------------------------------------------------#
 
 
@@ -79,7 +83,7 @@ sub CreateFolder
 	{
 		next unless ($folder);
 
-		$path = join('/', ($path, $folder));
+		$path = join($PATH_SEPARATOR, ($path, $folder));
 		$path = $1 if ($path =~ /^(.+)$/);
 
 		unless (-d $path)
@@ -130,7 +134,7 @@ sub DeleteFolder
 
 		if (-d "$folder/$file")
 		{
-			&DeleteFolder("$folder/$file");
+			DeleteFolder("$folder/$file");
 		}
 		else
 		{
@@ -164,7 +168,7 @@ sub DownloadFile
 			flock($fh, LOCK_SH);
 			binmode($fh);
 			print <$fh>;
-			close $fh;
+			my $closed = close $fh;
 		}
 	}
 	else
@@ -196,9 +200,9 @@ sub GetFileAsBase64
 		{
 			flock($fh, LOCK_SH);
 			binmode($fh) unless (-T $file);
-			local $/ = undef;
+			local $INPUT_RECORD_SEPARATOR = undef;
 			$d = <$fh>;
-			$error = close $fh;
+			my $error = close $fh;
 		}
 
 		$data = encode_base64($d);
@@ -246,7 +250,7 @@ sub GetFilePath
 		$path =~ s/\\{1,}/\//g;
 		@path = split(/\//, $path);
 		pop(@path);
-		$path = join('/', @path);
+		$path = join($PATH_SEPARATOR, @path);
 	}
 
 	return $path;
@@ -267,14 +271,14 @@ sub GetListing
 	opendir(DIR, "$directory");
 	while (my $item = readdir(DIR))
 	{
-		next if (-d join('/', ($directory, $item)));
+		next if (-d join($PATH_SEPARATOR, ($directory, $item)));
 		next if ($item =~ /^thumbs\.db$/i);
 
-		push(@$listing, $item);
+		push(@{$listing}, $item);
 	}
 	closedir(DIR);
 
-	return (wantarray) ? @$listing : $listing;
+	return (wantarray) ? @{$listing} : $listing;
 }
 #########################################||#########################################
 

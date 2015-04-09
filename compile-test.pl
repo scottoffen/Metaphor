@@ -36,4 +36,8 @@ BEGIN
 	print "Loaded\n";
 #----------------------------------------------------------------------------------#
 
+# my $guid = CreateGuid();
+# print "$guid\n";
+# print IsGuid($guid) . "\n";
+
 exit;

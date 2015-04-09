@@ -13,6 +13,7 @@ package Metaphor::Encryption;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use Readonly;
 	use Metaphor::Util qw(Declassify);
 	use Crypt::Eksblowfish::Bcrypt qw(bcrypt en_base64);
 	use parent 'Exporter';
@@ -29,6 +30,11 @@ package Metaphor::Encryption;
 	(
 		'all' => [qw(Encrypt Matches)]
 	);
+
+	Readonly my $MIN_HASH_LENGTH = 13;
+	Readonly my $MIN_SALT_LENGTH = 15;
+	Readonly my $UNICODE_CHARSET = 256;
+	Readonly my $EMPTY      = q{};
 #----------------------------------------------------------------------------------#
 
 
@@ -56,7 +62,7 @@ sub Encrypt
 		my $salt = GenSalt();
 		my $hash = bcrypt($value, "\$2a\$08\$$salt");
 
-		return (length $hash > 13) ? ($hash, $salt) : ();
+		return (length $hash > $MIN_HASH_LENGTH) ? ($hash, $salt) : ();
 	}
 
 	return ();
@@ -70,10 +76,10 @@ sub Encrypt
 #----------------------------------------------------------------------------------#
 sub GenSalt
 {
-	my $salt = '';
-	for my $i (0..15)
+	my $salt = $EMPTY;
+	for my $i (0..$MIN_SALT_LENGTH)
 	{
-	    $salt .= chr(rand(256));
+	    $salt .= chr(rand($UNICODE_CHARSET));
 	}
 
 	return en_base64($salt);

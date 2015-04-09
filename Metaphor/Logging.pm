@@ -16,6 +16,8 @@ package Metaphor::Logging;
 	use Time::HiRes;
 	use FileHandle;
 	use Fcntl qw(:flock);
+	use Readonly;
+	use English qw(-no_match_vars);
 	use Metaphor::Config;
 	use Metaphor::Storage;
 	use Metaphor::Util qw(Declassify);
@@ -48,6 +50,14 @@ package Metaphor::Logging;
 	(
 		'all' => [qw(FATAL ERROR WARN INFO DEBUG TRACE)]
 	);
+
+	Readonly my $EMPTY          = q{};
+	Readonly my $SPACE          = q{ };
+	Readonly my $BANG           = q{!};
+	Readonly my $MSG_SEPARATOR  = q{,};
+	Readonly my $TIME_SEPARATOR = q{:};
+	Readonly my $PATH_SEPARATOR = q{/};
+	Readonly my $YEAR_OFFSET    = 1900;
 #----------------------------------------------------------------------------------#
 
 
@@ -66,14 +76,16 @@ package Metaphor::Logging;
 our $LEVELS = do
 {
 	my $levels = { 'OFF' => 0, '0' => 'OFF' };
+	my $numlevels = scalar @EXPORT;
 
-	for (my $i = 0; $i < scalar @EXPORT; $i += 1)
+	for (0..($numlevels - 1))
 	{
+		my $i = $_;
 		$levels->{$i+1} = $EXPORT[$i];
 		$levels->{$EXPORT[$i]} = $i+1;
 	}
 
-	$levels->{'ALL'} = (scalar keys %$levels) / 2;
+	$levels->{'ALL'} = (scalar keys %{$levels}) / 2;
 	$levels->{$levels->{'ALL'}} = 'ALL';
 
 	$levels;
@@ -88,7 +100,11 @@ END
 {
 	foreach my $key (keys %{$LOGGERS})
 	{
-		close $LOGGERS->{$key}->{'fh'};
+		my $closed = close $LOGGERS->{$key}->{'fh'};
+		if (!$closed)
+		{
+			WARN("Error closing file : $ERRNO");
+		}
 	}
 }
 #----------------------------------------------------------------------------------#
@@ -105,7 +121,7 @@ sub _Log
 	{
 		$details->{message} = Dumper($details->{message});
 	}
-	$details->{message} =~ s/[\r\n]/ /g;
+	$details->{message} =~ s/[\r\n]/ /gm;
 
 	#----------------------------------------------------------------------------------#
 	# Generate message                                                                 #
@@ -115,13 +131,13 @@ sub _Log
 		my (@message, @console);
 		foreach my $part ('time', 'ipaddress', 'pid', 'script', 'package', 'subroutine', 'line', 'level', 'message')
 		{
-			$details->{$part} = '' unless (defined $details->{$part});
+			$details->{$part} = $EMPTY if (!defined $details->{$part});
 			push(@message, $details->{$part});
 			push(@console, (exists $FORMATTERS->{$part}) ? sprintf($FORMATTERS->{$part}, $details->{$part}) : $details->{$part});
 			# Adds formatting to the console output
 		}
 
-		$message = join(',' , @message) . "\n";
+		$message = join($MSG_SEPARATOR, @message) . "\n";
 		$console = join("\t", @console) . "\n";
 
 		print "$console" if ($CONSOLE);
@@ -318,13 +334,13 @@ sub GetCurrentTime
 	my ($sec, $micro) = Time::HiRes::gettimeofday();
 
 	my @time_parts;
-	push (@time_parts, ($time[5] + 1900));
+	push (@time_parts, ($time[5] + $YEAR_OFFSET));
 	push (@time_parts, sprintf("%02d", ($time[4] + 1)));
 	push (@time_parts, sprintf("%02d", $time[3]));
-	push (@time_parts, join (":", (sprintf("%02d", $time[2]), sprintf("%02d", $time[1]), sprintf("%02d", $time[0]))));
+	push (@time_parts, join ($TIME_SEPARATOR, (sprintf("%02d", $time[2]), sprintf("%02d", $time[1]), sprintf("%02d", $time[0]))));
 	push (@time_parts, sprintf("%06d", $micro));
 
-	return join(" ", @time_parts);
+	return join($SPACE, @time_parts);
 }
 #########################################||#########################################
 
@@ -340,7 +356,7 @@ sub GetDetails
 	{
 		ipaddress => ($ENV{'REMOTE_ADDR'}) ? $ENV{'REMOTE_ADDR'} : 'local',
 		time      => GetCurrentTime(),
-		pid       => $$
+		pid       => $PID
 	};
 
 	while ($caller)
@@ -365,7 +381,7 @@ sub GetDetails
 		#----------------------------------------------------------------------------------#
 		# Caller(2) will provide subroutine                                                #
 		#----------------------------------------------------------------------------------#
-		unless (defined $details->{subroutine})
+		if (!defined $details->{subroutine})
 		{
 			$details->{subroutine} = $caller[3];
 			if ($details->{subroutine})
@@ -380,11 +396,11 @@ sub GetDetails
 		# Caller(2,3) will provide script                                                  #
 		#----------------------------------------------------------------------------------#
 		$details->{script}  = GetFileName($caller[1]) if (defined $caller[1]);
-		$caller = ((($details->{script}) && ($details->{script} =~ /\.pm$/i)) || ($caller <= 2)) ? $caller + 1 : 0;
+		$caller = ((($details->{script}) && ($details->{script} =~ /\.pm$/mi)) || ($caller <= 2)) ? $caller + 1 : 0;
 		#----------------------------------------------------------------------------------#
 	}
 
-	$details->{subroutine} = 'inline' unless (defined $details->{subroutine});
+	$details->{subroutine} = 'inline' if (!defined $details->{subroutine});
 	return $details;
 }
 #########################################||#########################################
@@ -406,24 +422,24 @@ sub StartLog
 	{
 		$error = CreateFolder($logdir);
 
-		unless ($error =~ /^!/)
+		if ($error !~ /^!/)
 		{
 			$error = undef;
 
 			my $tfile = GetFileName($ENV{SCRIPT_FILENAME});
 			$tfile = ($tfile) ? $tfile . ".txt" : "temp.txt";
 
-			$params->{'file'}    = $tfile unless (defined $params->{'file'});
-			$params->{'path'}    = join('/', ($logdir, $params->{'file'}));
-			$params->{'level'}   = 'ALL' unless (defined $params->{'level'});
-			$params->{'level'}   = $LEVELS->{$params->{'level'}} unless ($params->{'level'} =~ /^\d+$/);
+			$params->{'file'}    = $tfile if (!defined $params->{'file'});
+			$params->{'path'}    = join($PATH_SEPARATOR, ($logdir, $params->{'file'}));
+			$params->{'level'}   = 'ALL' if (!defined $params->{'level'});
+			$params->{'level'}   = $LEVELS->{$params->{'level'}} if (!$params->{'level'} =~ /^\d+$/);
 
 			return $params->{'path'} if (exists $LOGGERS->{$params->{'path'}});
 
 			$params->{'path'} = $1 if ($params->{'path'} =~ /^(.+)$/);
-			$params->{'fh'}   = FileHandle->new(">> " . $params->{'path'}) || ($error = "!" . $!);
+			$params->{'fh'}   = FileHandle->new(">> " . $params->{'path'}) || ($error = $BANG . $ERRNO);
 
-			unless ($error)
+			if (!$error)
 			{
 				$LOGGERS->{$params->{'path'}} = $params;
 				return $params->{'path'};
@@ -448,7 +464,12 @@ sub StopLog
 
 	if (($path) && (defined $LOGGERS->{$path}))
 	{
-		close $LOGGERS->{$path}->{'fh'};
+		my $closed = close $LOGGERS->{$path}->{'fh'};
+		if (!$closed)
+		{
+			DEBUG("Unable to close logger : $ERRNO");
+		}
+
 		delete $LOGGERS->{$path};
 	}
 

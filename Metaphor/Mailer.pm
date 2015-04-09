@@ -27,6 +27,8 @@ package Metaphor::Mailer;
 	use Encode qw(encode);
 	use Mail::RFC822::Address qw(valid);
 	use Time::Local;
+	use Readonly;
+	use English qw(-no_match_vars);
 	use Metaphor::Config;
 	use Metaphor::Logging;
 	use Metaphor::Storage qw(GetFileAsBase64 GetFileName);
@@ -45,6 +47,10 @@ package Metaphor::Mailer;
 	our $SMTP     = {};
 	our $ACCOUNTS = {};
 	our $DEFAULT  = undef;
+	our $EMPTY    = q{};
+
+	Readonly my $DEFAULT_BOUNDARY_LENGTH = 20;
+	Readonly my $SECONDS_PER_HOUR        = 360;
 
 	#----------------------------------------------------------------------------------#
 	# Create default host                                                              #
@@ -54,7 +60,7 @@ package Metaphor::Mailer;
 		if (defined $ENV{'HTTP_HOST'})
 		{
 			my @httphost = (($ENV{'HTTP_HOST'} =~ /^(.+)$/i)) ? split(/\./, $1) : ();
-			$HOST = join(".", ("mail", $httphost[-2], $httphost[-1]));
+			$HOST = join(q{.}, ("mail", $httphost[-2], $httphost[-1]));
 		}
 	}
 	#----------------------------------------------------------------------------------#
@@ -67,9 +73,9 @@ package Metaphor::Mailer;
 		my $accounts = $MAILER->{"accounts"} || {};
 		my $default  = undef;
 
-		foreach my $key (keys %$accounts)
+		foreach my $key (keys %{$accounts})
 		{
-			if ($key =~ /^default$/i)
+			if (uc($key) eq 'DEFAULT')
 			{
 				$default = $accounts->{$key};
 				next;
@@ -113,7 +119,7 @@ sub AddAccount
 		#----------------------------------------------------------------------------------#
 		# Verify required parameters have been provided                                    #
 		#----------------------------------------------------------------------------------#
-		my $label = (exists $params->{label}) ? $params->{label} : (exists $params->{username}) ? $params->{username} : RandomString(10);
+		my $label = (exists $params->{label}) ? $params->{label} : (exists $params->{username}) ? $params->{username} : RandomString();
 		$params->{mailhost} = $HOST unless (defined $params->{mailhost});
 		{
 			my $missing  = 0;
@@ -229,7 +235,7 @@ sub AttachText
 #----------------------------------------------------------------------------------#
 sub Boundary
 {
-	my $length     = ((@_) && ($_[0] =~ /^\d{1,2}$/)) ? shift : 20;
+	my $length     = ((@_) && ($_[0] =~ /^\d{1,2}$/)) ? shift : $DEFAULT_BOUNDARY_LENGTH;
 	my $result     = "=_NextPart_";
 	my $characters = ".=_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ()+:?";
 
@@ -289,9 +295,9 @@ sub FormatDate
 	my @localtime = localtime($time);
 	my @timeparts = split(/ /, localtime($time));
 
-	my $timezone = ((abs(timegm(@localtime) - timelocal(@localtime))) / (60 * 60)) * 100;
+	my $timezone = ((abs(timegm(@localtime) - timelocal(@localtime))) / $SECONDS_PER_HOUR) * 100;
 	$timezone    = '0' . $timezone if (length $timezone < 4);
-	$timezone    = '-' . $timezone if (timelocal(@localtime) > timegm(@localtime));
+	$timezone    = q{-} . $timezone if (timelocal(@localtime) > timegm(@localtime));
 
 	return "$timeparts[0], $timeparts[2] $timeparts[1] $timeparts[4] $timeparts[3] $timezone";
 }
@@ -305,8 +311,8 @@ sub FormatDate
 sub FormattAddresses
 {
 	my ($list) = @_;
-	return "" unless (($list) && (ref $list eq 'HASH'));
-	return join("; ", map { "\"" . $list->{$_} . "\" <$_>" } keys %$list);
+	return $EMPTY unless (($list) && (ref $list eq 'HASH'));
+	return join(q{; }, map { q{"} . $list->{$_} . q{"} . " <$_>" } keys %{$list});
 }
 #########################################||#########################################
 
@@ -371,13 +377,13 @@ sub MergeRecipients
 	{
 		next unless (($list) && (ref $list eq 'HASH'));
 
-		foreach my $key (keys %$list)
+		foreach my $key (keys %{$list})
 		{
 			$merged->{$key} = 1;
 		}
 	}
 
-	return (keys %$merged);
+	return (keys %{$merged});
 }
 #########################################||#########################################
 
@@ -420,7 +426,7 @@ sub SendEmail
 			# Defaults                                                                         #
 			#----------------------------------------------------------------------------------#
 			$headers = ((defined $params->{headers}) && (ref $params->{headers} eq 'HASH')) ? $params->{headers} : {};
-			foreach my $key (keys %$defaults)
+			foreach my $key (keys %{$defaults})
 			{
 				$headers->{$key} = $defaults->{$key} unless (defined $headers->{$key});
 			}
@@ -436,7 +442,7 @@ sub SendEmail
 			}
 			else
 			{
-				WARN("Can't send from " . $account->{address} . " : $!");
+				WARN("Can't send from " . $account->{address} . " : $ERRNO");
 				return;
 			}
 			#----------------------------------------------------------------------------------#
@@ -451,12 +457,12 @@ sub SendEmail
 
 			if (!($smtp->recipient(MergeRecipients($to, $cc, $bcc))))
 			{
-				WARN ("Unable to set email recipients : $!");
+				WARN ("Unable to set email recipients : $ERRNO");
 				return;
 			}
 
 			$headers->{'To'} = FormattAddresses($to);
-			$headers->{'Cc'} = FormattAddresses($cc) if (scalar keys %$cc > 0);
+			$headers->{'Cc'} = FormattAddresses($cc) if (scalar keys %{$cc} > 0);
 			#----------------------------------------------------------------------------------#
 
 
@@ -467,7 +473,7 @@ sub SendEmail
 			$headers->{'Subject'} = encode('MIME-Header', $headers->{'Subject'});
 			#----------------------------------------------------------------------------------#
 
-			$headers = join("\n", map { "$_: " . $headers->{$_} } keys %$headers);
+			$headers = join("\n", map { "$_: " . $headers->{$_} } keys %{$headers});
 		}
 		#----------------------------------------------------------------------------------#
 
@@ -479,7 +485,7 @@ sub SendEmail
 			#----------------------------------------------------------------------------------#
 			# Create message parts                                                             #
 			#----------------------------------------------------------------------------------#
-			my $text  = (defined $params->{text}) ? AttachText($params->{text}, $charset) : AttachText("", $charset);
+			my $text  = (defined $params->{text}) ? AttachText($params->{text}, $charset) : AttachText($EMPTY, $charset);
 			my $html  = (defined $params->{html}) ? AttachHtml($params->{html}, $charset) : undef;
 			my $files = undef;
 			{
@@ -490,7 +496,7 @@ sub SendEmail
 					foreach my $attachment (@{$params->{attach}})
 					{
 						$attachment = AttachFile($attachment);
-						push (@$files, $attachment) if ($attachment);
+						push (@{$files}, $attachment) if ($attachment);
 					}
 				}
 			}
@@ -515,12 +521,12 @@ sub SendEmail
 			#----------------------------------------------------------------------------------#
 			# Multipart-Mixed Conversion                                                       #
 			#----------------------------------------------------------------------------------#
-			if (($files) && (scalar @$files > 0))
+			if (($files) && (scalar @{$files} > 0))
 			{
-				my $boundary = Boundary(21);
+				my $boundary = Boundary();
 				$content = "Content-Type: multipart/mixed; boundary=\"$boundary\"\n\n--$boundary\n$content\n";
 
-				foreach my $file (@$files)
+				foreach my $file (@{$files})
 				{
 					$content .= "\n--$boundary\n$file\n";
 				}
@@ -545,7 +551,7 @@ sub SendEmail
 			}
 			else
 			{
-				WARN("SMTP refused data : $!");
+				WARN("SMTP refused data : $ERRNO");
 				return;
 			}
 		}
@@ -573,7 +579,7 @@ sub SendText
 	{
 		my $text =
 		{
-			subject => '',
+			subject => $EMPTY,
 			from    => (defined $params->{from}) ? $params->{from} : $DEFAULT,
 			to      => (defined $params->{to})   ? $params->{to}   : undef,
 			text    => (defined $params->{text}) ? $params->{text} : undef
@@ -636,7 +642,7 @@ sub VerifyAddresses
 		#----------------------------------------------------------------------------------#
 		# Validate : Make sure each address is valid                                       #
 		#----------------------------------------------------------------------------------#
-		foreach my $key (keys %$addresses)
+		foreach my $key (keys %{$addresses})
 		{
 			my $val = $addresses->{$key};
 

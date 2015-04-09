@@ -14,6 +14,8 @@ package Metaphor::Database;
 	use strict;
 	use warnings;
 	use DBI;
+	use Readonly;
+	use English qw(-no_match_vars);
 	use MIME::Base64;
 	use Metaphor::Config;
 	use Metaphor::Logging;
@@ -31,6 +33,9 @@ package Metaphor::Database;
 	our $CONFIG    = GetConfig()->{'database'};
 	our @ERRORS    = ();
 	our $DEFAULT   = 'default';
+
+	Readonly my $PARAM_SEPARATOR             = q{-};
+	Readonly my $CONNECTION_STRING_SEPARATOR = q{:};
 #----------------------------------------------------------------------------------#
 
 
@@ -57,9 +62,9 @@ sub AddConnection
 
 	if ($params)
 	{
-		unless (exists $params->{id})
+		if (!exists $params->{id})
 		{
-			$params->{id} = join("-", (time, $$));
+			$params->{id} = join($PARAM_SEPARATOR, (time, $PID));
 		}
 
 		if (VerifyDbParams($params->{id}, $params))
@@ -84,7 +89,7 @@ sub Connect
 
 	if (ref $database eq 'HASH')
 	{
-		$database = (exists $params->{id}) ? $params->{id} : join("-", (time, $$));
+		$database = (exists $params->{id}) ? $params->{id} : join($PARAM_SEPARATOR, (time, $PID));
 	}
 
 	if ($params)
@@ -95,7 +100,7 @@ sub Connect
 			# Connect to the database                                                          #
 			#----------------------------------------------------------------------------------#
 			{
-				my $con = join(":", ("dbi", "mysql", $params->{schema}, $params->{host}));
+				my $con = join($CONNECTION_STRING_SEPARATOR, ("dbi", "mysql", $params->{schema}, $params->{host}));
 				my $dbh = DBI->connect($con, $params->{username}, decode_base64($params->{password}), {RaiseError => 0, PrintError => 0});
 
 				if ($DBI::err)
@@ -145,14 +150,14 @@ sub Execute
 				# because sometimes there are no bindings
 				no warnings 'uninitialized';
 				DEBUG("Query    : $query");
-				DEBUG("Bindings : " . join(", ", @$bindings));
+				DEBUG("Bindings : " . join(", ", @{$bindings}));
 			}
 
 			my $sth = $dbh->prepare($query);
 
 			if ($sth)
 			{
-				my $result = $sth->execute(@$bindings);
+				my $result = $sth->execute(@{$bindings});
 
 				if ($result)
 				{
@@ -162,14 +167,14 @@ sub Execute
 
 			if ($dbh->errstr)
 			{
-				my $error = join(':', ($dbh->err, $dbh->errstr));
+				my $error = join($CONNECTION_STRING_SEPARATOR, ($dbh->err, $dbh->errstr));
 				push(@ERRORS, $error);
 				ERROR($error);
 			}
 		}
 		else
 		{
-			WARN("Unable to execute query : ($query), (" . join(", ", @$bindings) . ")");
+			WARN("Unable to execute query : ($query), (" . join(", ", @{$bindings}) . ")");
 		}
 	}
 
@@ -199,7 +204,7 @@ sub Fetch
 				# because sometimes there are no bindings
 				no warnings 'uninitialized';
 				DEBUG("Query    : $query");
-				DEBUG("Bindings : " . join(", ", @$bindings));
+				DEBUG("Bindings : " . join(", ", @{$bindings}));
 			}
 
 			my @rows = ();
@@ -207,7 +212,7 @@ sub Fetch
 
 			if ($sth)
 			{
-				$sth->execute(@$bindings);
+				$sth->execute(@{$bindings});
 
 				#--> NOTE: There is a good reason I'm not using fetchrow_arrayref()
 				while (my @row = $sth->fetchrow_array())
@@ -221,7 +226,7 @@ sub Fetch
 
 			if ($dbh->errstr)
 			{
-				my $error = join(':', ($dbh->err, $dbh->errstr));
+				my $error = join($CONNECTION_STRING_SEPARATOR, ($dbh->err, $dbh->errstr));
 				push(@ERRORS, $error);
 				ERROR($error);
 			}
@@ -309,7 +314,7 @@ sub RemoveConnection
 		delete $CONFIG->{$value};
 		if (exists $DBHANDLES->{$value})
 		{
-			close $DBHANDLES->{$value};
+			$DBHANDLES->{$value}->disconnect;
 			delete $DBHANDLES->{$value};
 		}
 	}
@@ -356,7 +361,7 @@ sub VerifyDbParams
 
 	foreach my $key (@required)
 	{
-		unless ((exists $params->{$key}) && (defined $params->{$key}))
+		if ((!exists $params->{$key}) || (!defined $params->{$key}))
 		{
 			push (@missing, $key);
 			$missing++;

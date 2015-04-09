@@ -27,9 +27,11 @@ package Metaphor::Scripting;
 #----------------------------------------------------------------------------------#
 # Service Initialization                                                           #
 #----------------------------------------------------------------------------------#
-our ($QUERY, $PARSERS);
+our ($QUERY, $PARSERS, $EMPTY);
 BEGIN
 {
+	$EMPTY = q{};
+
 	#----------------------------------------------------------------------------------#
 	# Try to use CGI::Simple, fallback on CGI.pm, croak if everything fails            #
 	#----------------------------------------------------------------------------------#
@@ -144,7 +146,7 @@ BEGIN
 
 		foreach my $key ('PATH_INFO', 'CONTENT_TYPE', 'HTTP_ACCEPT', 'REQUEST_URI')
 		{
-			$ENV{$key} = '' unless defined $ENV{$key};
+			$ENV{$key} = $EMPTY unless defined $ENV{$key};
 		}
 
 		foreach my $key (keys %ENV)
@@ -204,7 +206,7 @@ sub GetContent
 		#------------------------------------------------------------------------------------#
 		# Url encoded or multipart form data                                                 #
 		#------------------------------------------------------------------------------------#
-		my $types = join('|', ("application\\/x-www-form-urlencoded", "multipart\\/form-data"));
+		my $types = join(q{|}, ("application\\/x-www-form-urlencoded", "multipart\\/form-data"));
 		if ((!$ENV{CONTENT_TYPE}) || ($ENV{CONTENT_TYPE} =~ /^($types).*$/i))
 		{
 			my @keys = $QUERY->param;
@@ -302,7 +304,7 @@ sub GetContent
 	#------------------------------------------------------------------------------------#
 	# Normalize the key strings to lowercase                                             #
 	#------------------------------------------------------------------------------------#
-	foreach my $key (keys %$CONTENT)
+	foreach my $key (keys %{$CONTENT})
 	{
 		$content->{lc($key)} = $CONTENT->{$key};
 	}
@@ -412,10 +414,10 @@ sub NegotiateType
 	#------------------------------------------------------------------------------------#
 	if (!defined $type)
 	{
-		my @accept = split(',', $ENV{HTTP_ACCEPT});
+		my @accept = split(/,/, $ENV{HTTP_ACCEPT});
 		foreach my $accept (sort @accept)
 		{
-			foreach my $key (sort {uc($a) cmp uc($b)} keys %$TYPES)
+			foreach my $key (sort {uc($a) cmp uc($b)} keys %{$TYPES})
 			{
 				my $val = $TYPES->{$key};
 				if ($accept =~ /^$val$/i)

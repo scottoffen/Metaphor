@@ -13,6 +13,8 @@ package Metaphor::Config;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use English qw(-no_match_vars);
+	use Readonly;
 	use JSON::PP;
 	use Try::Tiny;
 	use Metaphor::Util qw(Declassify);
@@ -28,6 +30,8 @@ package Metaphor::Config;
 	our @EXPORT  = qw(GetConfig LoadConfig);
 	our $CONFIG  = undef;
 	our $DEFAULT = "config.json";
+
+	Readonly my $FILE_PATH_SEPARATOR = q{/};
 #----------------------------------------------------------------------------------#
 
 
@@ -36,7 +40,7 @@ package Metaphor::Config;
 #----------------------------------------------------------------------------------#
 sub GetConfig
 {
-	unless ((defined $CONFIG) && (ref $CONFIG eq 'HASH'))
+	if ((!defined $CONFIG) || (ref $CONFIG ne 'HASH'))
 	{
 		$CONFIG = LoadConfig(@_);
 	}
@@ -57,11 +61,11 @@ sub LoadConfig
 
 	if ($file)
 	{
-		if ($file =~ /\.xml$/i)
+		if ($file =~ /\.xml$/mi)
 		{
 			return LoadXML($file);
 		}
-		elsif ($file =~ /\.json/i)
+		elsif ($file =~ /\.json$/mi)
 		{
 			return LoadJson($file);
 		}
@@ -86,9 +90,14 @@ sub LoadJson
 		my $opened = open(my $json_fh, "<:encoding(UTF-8)", $file);
 		if ($opened)
 		{
-			local $/ = undef;
+			local $INPUT_RECORD_SEPARATOR = undef;
 			$json = <$json_fh>;
-			close($json_fh);
+			my $closed = close($json_fh);
+
+			if (!$closed)
+			{
+				DEBUG("Error closing $file : $ERRNO")
+			}
 		}
 
 		$json;
@@ -100,7 +109,7 @@ sub LoadJson
 	}
 	catch
 	{
-		DEBUG('Error decoding JSON ($file): $!');
+		DEBUG("Error decoding JSON ($file) : $ERRNO");
 	};
 
 	return {};
@@ -138,7 +147,7 @@ sub Locate
 		{
 			foreach my $location (@INC)
 			{
-				my $location = join('/', ($location, $file));
+				my $location = join($FILE_PATH_SEPARATOR, ($location, $file));
 				return $location if (-e $location);
 			}
 		}

@@ -13,8 +13,10 @@ package Metaphor::Util;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use Readonly;
+	use English qw(-no_match_vars);
 	use Time::HiRes;
-	use Scalar::Util ('blessed');
+	use Scalar::Util qw(blessed);
 	use base 'Exporter';
 #----------------------------------------------------------------------------------#
 
@@ -57,12 +59,20 @@ package Metaphor::Util;
 #----------------------------------------------------------------------------------#
 # Global GUID RegEx                                                                #
 #----------------------------------------------------------------------------------#
-	my $dash  = '\\-';
-	my $an4   = '[a-f0-9]{4}';
-	my $an8   = '[a-f0-9]{8}';
-	my $an12  = '[a-f0-9]{12}';
-	my $guidx = join($dash, ($an8, $an4, $an4, $an4, $an12));
-	our $GUID = qr{^/$guidx}i;
+	Readonly my $DEFAULT_RANDOM_STR_LEN = 10;
+	Readonly my $MAX_OCTET_VALUE        = 255;
+
+	my $PHONE_SEPARATOR = q{-};
+	my $GUID_SEPARATOR  = q{-};
+	our $GUID = do
+	{
+		my $dash  = q{\\} . $GUID_SEPARATOR;
+		my $an4   = '[a-f0-9]{4}';
+		my $an8   = '[a-f0-9]{8}';
+		my $an12  = '[a-f0-9]{12}';
+		my $guidx = join($dash, ($an8, $an4, $an4, $an4, $an12));
+		qr{$guidx}i;
+	};
 #----------------------------------------------------------------------------------#
 
 ##############################|     Create Guid     |###############################
@@ -70,10 +80,10 @@ package Metaphor::Util;
 #----------------------------------------------------------------------------------#
 sub CreateGuid
 {
-	my $guid = '09EAB114C555' . sprintf("%05d", $$) . sprintf("%.6f", Time::HiRes::time());
+	my $guid = '09EAB114C555' . sprintf("%05d", $PID) . sprintf("%.6f", Time::HiRes::time());
 
 	$guid =~ s/\.//g;
-	$guid = substr($guid, 0, 8) . '-' . substr($guid, 8, 4) . '-' . substr($guid, 12, 4) . '-' . substr($guid, 16, 4) . '-' . substr($guid, 20, 12);
+	$guid = join($GUID_SEPARATOR, (substr($guid, 0, 8), substr($guid, 8, 4), substr($guid, 12, 4), substr($guid, 16, 4), substr($guid, 20, 12)));
 
 	return $guid;
 }
@@ -88,7 +98,7 @@ sub CreateGuid
 sub RandomString
 {
 	my ($length) = Declassify(\@_);
-	$length = 10 unless ($length =~ /^\d+$/);
+	$length = $DEFAULT_RANDOM_STR_LEN unless ($length =~ /^\d+$/);
 
 	my @chars  = ('A'..'Z','0'..'9');
 
@@ -147,7 +157,7 @@ sub TrimString
 sub IsGuid
 {
 	my ($value) = Declassify(\@_);
-	my $result  = (($value) && ($value =~ $guid)) ? 1 : 0;
+	my $result  = (($value) && ($value =~ $GUID)) ? 1 : 0;
 
     return $result;
 }
@@ -180,7 +190,7 @@ sub IsBool
 
 	if (defined $value)
 	{
-		if ($value =~ /^(0|1)$/)
+		if ($value eq '0' || $value eq '1')
 		{
 			return 1;
 		}
@@ -204,11 +214,11 @@ sub IsIPAddress
 	{
 		if ($value =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/xi)
 		{
-			my @octets = split('\.', $value);
+			my @octets = split(/\./, $value);
 
 			foreach my $octet (@octets)
 			{
-				return 0 if ($octet > 255);
+				return 0 if ($octet > $MAX_OCTET_VALUE);
 			}
 
 			return 1;
@@ -257,7 +267,7 @@ sub FormatPhone
 		$value =~ s/\D//g;
 		if ($value =~ /^\d{10}$/)
 		{
-			$value = "(" . substr($value, 0, 3) . ") " . substr($value, 3, 3) . "-" . substr($value, 6);
+			$value = "(" . substr($value, 0, 3) . ") " . substr($value, 3, 3) . $PHONE_SEPARATOR . substr($value, 6);
 		}
 	}
 

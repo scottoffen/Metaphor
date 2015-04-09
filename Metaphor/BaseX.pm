@@ -13,6 +13,7 @@ package Metaphor::BaseX;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use Readonly;
 	use Metaphor::Logging;
 #----------------------------------------------------------------------------------#
 
@@ -21,6 +22,10 @@ package Metaphor::BaseX;
 # Global Variables                                                                 #
 #----------------------------------------------------------------------------------#
 	our $VERSION = '1.0.0';
+	our $EMPTY   = q{};
+
+	Readonly my $ASCII_START = 32;  # ascii space
+	Readonly my $ASCII_END   = 126; # ascii tilde
 #----------------------------------------------------------------------------------#
 
 
@@ -59,10 +64,10 @@ sub new
 		{
 			$self->{base} = $digits;
 
-			for (my $i = 0; $i < $digits; $i += 1)
+			for (0..$digits)
 			{
-				$self->{baseX}->{$digits[$i]} = $i;
-				$self->{base10}->{$i} = $digits[$i];
+				$self->{baseX}->{$digits[$_]} = $_;
+				$self->{base10}->{$_} = $digits[$_];
 			}
 		}
 		else
@@ -102,12 +107,13 @@ sub ConvertToBase10
 	my $base10 = 0;
 
 	my @digits = GetDigits($base_x, $self->{baseX});
-	my $power  = scalar @digits;
+	my $digits = scalar @digits;
+	my $power  = $digits;
 
-	for (my $i = 0; $i < scalar @digits; $i++)
+	for (0..$digits)
 	{
 		$power--;
-		$base10 += $self->{baseX}->{$digits[$i]} * ($self->{base}**$power);
+		$base10 += $self->{baseX}->{$digits[$_]} * ($self->{base}**$power);
 	}
 
 	return $base10;
@@ -125,7 +131,7 @@ sub ConvertFromBase10
 	my $base10 = shift;
 	my $base_x = undef;
 
-	if ($base10 =~ /^\d+$/)
+	if ($base10 =~ /^\d+$/m)
 	{
 		while ($base10 >= $self->{base})
 		{
@@ -148,18 +154,18 @@ sub ConvertFromBase10
 #----------------------------------------------------------------------------------#
 sub GetCharacterSet
 {
-	my $input = join('', @_);
+	my $input = join($EMPTY, @_);
 
 	if (length $input > 0)
 	{
 		my (%unique, @unique);
-		my @charset = split('', $input);
+		my @charset = split(//, $input);
 
 		foreach my $char (@charset)
 		{
 			my $ascii = ord($char);
 
-			if (($ascii > 31) && ($ascii < 127))
+			if (($ascii >= $ASCII_START) && ($ascii <= $ASCII_END))
 			{
 				if (!exists $unique{$char})
 				{
@@ -186,10 +192,10 @@ sub GetDigits
 {
 	my ($input, $valid) = @_;
 
-	$valid = join('', keys %$valid);
+	$valid = join($EMPTY, keys %{$valid});
 	$input =~ s/[^$valid]//g;
 
-	return split('', $input);
+	return split(//, $input);
 }
 #########################################||#########################################
 

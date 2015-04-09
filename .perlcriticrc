@@ -1,4 +1,4 @@
-severity = 3
+severity = 1
 
 
 [-Subroutines::RequireArgUnpacking]
@@ -17,3 +17,28 @@ packages = Data::Dumper File::Find FindBin Log::Log4perl DBI
 
 [ControlStructures::ProhibitCascadingIfElse]
 max_elsif = 5
+
+[-Subroutines::ProhibitExcessComplexity]
+
+[-RegularExpressions::RequireExtendedFormatting]
+
+[-RegularExpressions::ProhibitCaptureWithoutTest]
+
+[-ErrorHandling::RequireCarping]
+
+
+[-Documentation::RequirePodLinksIncludeText]
+
+[-Documentation::RequirePodSections]
+
+[-ControlStructures::ProhibitPostfixControls]
+
+[-ControlStructures::ProhibitUnlessBlocks]
+
+[-ControlStructures::ProhibitUntilBlocks]
+
+[-ValuesAndExpressions::ProhibitMagicNumbers]
+
+[-RegularExpressions::RequireDotMatchAnything]
+
+[-RegularExpressions::RequireLineBoundaryMatching]

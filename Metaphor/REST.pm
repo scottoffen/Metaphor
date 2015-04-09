@@ -13,6 +13,7 @@ package Metaphor::REST;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use English qw(-no_match_vars);
 	use Metaphor::Config;
 	use Metaphor::Logging;
 	use Metaphor::Scripting;
@@ -50,7 +51,13 @@ TEMPLATE
 #----------------------------------------------------------------------------------#
 	our $VERSION = '1.0.0';
 	our @EXPORT  = qw(barf Route Respond);
-	our $STATE   = 0; # Initial State
+
+	our $INITIAL_STATE            = 0;
+	our $RESOURCE_MATCH_FOUND     = 1;
+	our $ROUTE_EXECUTION_COMPLETE = 2;
+	our $ERROR_ENCOUNTERED        = 3;
+
+	our $STATE = $INITIAL_STATE;
 #----------------------------------------------------------------------------------#
 
 
@@ -63,7 +70,7 @@ TEMPLATE
 sub barf
 {
 	my ($status, $message) = @_;
-	$STATE = 3; # Trigger Error Condition
+	$STATE = $ERROR_ENCOUNTERED; # Trigger Error Condition
 
 	die
 	{
@@ -102,7 +109,7 @@ sub mkerror
 #----------------------------------------------------------------------------------#
 sub Route
 {
-	$STATE = 0;
+	$STATE = $INITIAL_STATE;
 
 	my ($headers, $code) = @_;
 	my $request          = {};
@@ -140,9 +147,9 @@ sub Route
 	#----------------------------------------------------------------------------------#
 	if ($code)
 	{
-		$STATE = 1; # Resource Match Found
+		$STATE = $RESOURCE_MATCH_FOUND;
 		$code->($request, GetContent());
-		$STATE = 2; # Resource Execution Complete
+		$STATE = $ROUTE_EXECUTION_COMPLETE;
 	}
 	#----------------------------------------------------------------------------------#
 
@@ -220,7 +227,7 @@ $SIG{__DIE__} = sub
 		}
 		#----------------------------------------------------------------------------------#
 
-		$STATE = 2;
+		$STATE = $ROUTE_EXECUTION_COMPLETE;
 	}
 };
 #########################################||#########################################
@@ -232,13 +239,13 @@ $SIG{__DIE__} = sub
 #----------------------------------------------------------------------------------#
 END
 {
-	if ((1 > $STATE) || ($STATE > 2)) # Didn't match
+	if (($INITIAL_STATE == $STATE) || ($STATE > $ROUTE_EXECUTION_COMPLETE))
 	{
 		#----------------------------------------------------------------------------------#
 		# Handle Errors                                                                    #
 		#----------------------------------------------------------------------------------#
 		print $Metaphor::Scripting::QUERY->header(-status => 501, -type => 'text/html');
-		print mkerror('<h1>Not Implemented[' . $! . ']</h1><i>' . $Metaphor::Scripting::QUERY->request_method() . ' : ' . $Metaphor::Scripting::QUERY->self_url() . '</i>', 'Server Error');
+		print mkerror('<h1>Not Implemented[' . $ERRNO . ']</h1><i>' . $Metaphor::Scripting::QUERY->request_method() . ' : ' . $Metaphor::Scripting::QUERY->self_url() . '</i>', 'Server Error');
 		#----------------------------------------------------------------------------------#
 	}
 }

@@ -13,6 +13,7 @@ package Metaphor::Tripcode;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use Readonly;
 	use Encode qw(encode);
 	use Metaphor::Util qw(Declassify);
 	use base 'Exporter';
@@ -40,6 +41,14 @@ package Metaphor::Tripcode;
 		'95' => 'd',
 		'96' => 'e'
 	};
+
+	Readonly my $COMPRESSIONAL_DATA_HARVEST = -10;
+	Readonly my $ASCII_MIN                  = 46;
+	Readonly my $ASCII_MAX                  = 122;
+
+	our $EMPTY             = q{};
+	our $DOT               = q{.};
+	our $DEFAULT_SEPARATOR = q{!};
 #----------------------------------------------------------------------------------#
 
 
@@ -77,20 +86,21 @@ sub GetTripcode
 	if ($input =~ /^(.{1,})#(.{1,})$/x)
 	{
 		my ($username, $password) = ($1, $2);
-		$seperator = '!' if (length $seperator < 1);
+		$seperator = $DEFAULT_SEPARATOR if (length $seperator < 1);
 
 		my $salt     = substr(($username . "H.."), 1,2);
-		my @password = split('', encode("shiftjis", $password));
+		my @password = split(//, encode("shiftjis", $password));
 		my $chars    = scalar @password;
 
-		for (my $i = 0; $i < $chars; $i += 1)
+		for (0..($chars - 1))
 		{
+			my $i = $_;
 			my $char  = $password[$i];
 			my $ascii = ord($char);
 
-			if (($ascii > 122) || ($ascii < 46))
+			if (($ascii > $ASCII_MAX) || ($ascii < $ASCII_MIN))
 			{
-				$password[$i] = ".";
+				$password[$i] = $DOT;
 			}
 			elsif (exists $REPLACE->{$ascii})
 			{
@@ -98,7 +108,7 @@ sub GetTripcode
 			}
 		}
 
-		return "$username$seperator" . (substr(crypt(join('', @password), $salt), -10));
+		return "$username$seperator" . (substr(crypt(join($EMPTY, @password), $salt), $COMPRESSIONAL_DATA_HARVEST));
 	}
 
 	return;
