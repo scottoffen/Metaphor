@@ -1,44 +1,46 @@
 severity = 1
 
-
 [-Subroutines::RequireArgUnpacking]
 
-[-TestingAndDebugging::ProhibitNoWarnings]
+[-Modules::ProhibitAutomaticExportation]
 
 [-ValuesAndExpressions::ProhibitCommaSeparatedStatements]
-
-[-Modules::ProhibitAutomaticExportation]
 
 [Variables::RequireLocalizedPunctuationVars]
 allow = %SIG %ENV
 
-[Variables::ProhibitPackageVars]
-packages = Data::Dumper File::Find FindBin Log::Log4perl DBI
+[TestingAndDebugging::ProhibitNoWarnings]
+allow = uninitialized
+
+[-RegularExpressions::RequireExtendedFormatting]
 
 [ControlStructures::ProhibitCascadingIfElse]
 max_elsif = 5
-
-[-Subroutines::ProhibitExcessComplexity]
-
-[-RegularExpressions::RequireExtendedFormatting]
 
 [-RegularExpressions::ProhibitCaptureWithoutTest]
 
 [-ErrorHandling::RequireCarping]
 
+[-Subroutines::ProhibitExcessComplexity]
 
-[-Documentation::RequirePodLinksIncludeText]
+[Variables::ProhibitPackageVars]
+packages = Data::Dumper File::Find FindBin Log::Log4perl DBI
+add_packages = 
 
-[-Documentation::RequirePodSections]
-
-[-ControlStructures::ProhibitPostfixControls]
-
-[-ControlStructures::ProhibitUnlessBlocks]
-
-[-ControlStructures::ProhibitUntilBlocks]
-
-[-ValuesAndExpressions::ProhibitMagicNumbers]
+[-RegularExpressions::RequireLineBoundaryMatching]
 
 [-RegularExpressions::RequireDotMatchAnything]
 
-[-RegularExpressions::RequireLineBoundaryMatching]
+[-ControlStructures::ProhibitUntilBlocks]
+
+[-ControlStructures::ProhibitUnlessBlocks]
+
+[-ControlStructures::ProhibitPostfixControls]
+
+[-Documentation::RequirePodSections]
+language = en_US
+source = module_starter_pbp
+
+[-Documentation::RequirePodLinksIncludeText]
+
+[-ValuesAndExpressions::ProhibitMagicNumbers]

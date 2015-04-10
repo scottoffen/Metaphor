@@ -445,7 +445,7 @@ __END__
 
 =head1 NAME
 
-Metaphor::REST
+Metaphor::Scripting
 
 =head1 SYNOPSIS
 
