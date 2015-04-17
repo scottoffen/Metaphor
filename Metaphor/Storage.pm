@@ -45,7 +45,7 @@ package Metaphor::Storage;
 #----------------------------------------------------------------------------------#
 sub CreateFolder
 {
-	my ($folder) = Declassify(\@_, __PACKAGE__);
+	my ($folder, $mask) = Declassify(\@_, __PACKAGE__);
 	my (@path, $path, $pass);
 
 	#----------------------------------------------------------------------------------#
@@ -53,6 +53,7 @@ sub CreateFolder
 	#----------------------------------------------------------------------------------#
 	return unless ($folder);
 	return $folder if (-d $folder);
+	$mask = 0777 unless ($mask);
 	#----------------------------------------------------------------------------------#
 
 
@@ -72,7 +73,7 @@ sub CreateFolder
 	# in the array created in the previous step is a drive letter, and therefore pre-  #
 	# populates this in the return value and removes the first element from the array. #
 	#----------------------------------------------------------------------------------#
-	$path = ($OSNAME =~ /^MSWin.+/i) ? shift(@path) : $EMPTY;
+	$path = (($OSNAME =~ /^MSWin.+/i) && ($path[1] =~ /\:/)) ? shift(@path) : $EMPTY;
 	#----------------------------------------------------------------------------------#
 
 
@@ -88,8 +89,11 @@ sub CreateFolder
 
 		unless (-d $path)
 		{
-			$pass = mkdir($path, 0777);
-			return $pass unless ($pass);
+			$pass = mkdir($path, $mask);
+			unless ($pass)
+			{
+				return $pass;
+			}
 		}
 	}
 	#----------------------------------------------------------------------------------#
