@@ -1,5 +1,7 @@
 ![](https://raw.githubusercontent.com/scottoffen/Metaphor/master/metaphor.png)
 
+*The documentation on the wiki is a bit out of date, I'll be working to update it over the next few weeks.*
+
 Metaphor is a collection of Perl modules that supports the development and maintenance of a [resource-oriented architecture](http://en.wikipedia.org/wiki/Resource-oriented_architecture) (ROA) via [RESTful interfaces](http://en.wikipedia.org/wiki/Representational_state_transfer).
 
 Initially inspired by [Andrew Sterling Hanenkamp](http://www.onlamp.com/pub/au/3067)'s 2008 article *[Developing RESTful Web Services in Perl](http://www.onlamp.com/pub/a/onlamp/2008/02/19/developing-restful-web-services-in-perl.html)*, Metaphor not only makes it simple to route incoming requests to specific blocks of code, it also provides patterns for encapsulating data access business logic in Perl modules, common configuration and logging functionality, and utilities for some of the most common things your web applications would want to do (working with the file system, connecting to databases, and even sending multimedia emails!).
@@ -9,11 +11,11 @@ Metaphor has built in support for [content negotiation](http://en.wikipedia.org/
 ## Pattern Overview ##
 
 ```
-      RDBMS        |         Perl Modules and Services
-+--------------+   |   +--------------+       +--------------+
-|   Database   | <-|-> | Data Modules | <---> | Web Services |
-+--------------+   |   +--------------+       +--------------+
-                   |
+      RDBMS        |         Perl Modules and Services           |    Client/Browser
++--------------+   |   +--------------+       +--------------+   |   +--------------+
+|   Database   | <-|-> | Data Modules | <---> | Web Services | <-|-> |  AJAX Calls  | 
++--------------+   |   +--------------+       +--------------+   |   +--------------+
+                   |                                             |
 ```
 
 ## Intended Audience ##
