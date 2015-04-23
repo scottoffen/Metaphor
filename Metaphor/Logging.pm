@@ -51,12 +51,13 @@ package Metaphor::Logging;
 		'all' => [qw(FATAL ERROR WARN INFO DEBUG TRACE)]
 	);
 
-	Readonly my $EMPTY          = q{};
-	Readonly my $SPACE          = q{ };
-	Readonly my $BANG           = q{!};
-	Readonly my $MSG_SEPARATOR  = q{,};
-	Readonly my $TIME_SEPARATOR = q{:};
-	Readonly my $PATH_SEPARATOR = q{/};
+	our $EMPTY          = q{};
+	our $SPACE          = q{ };
+	our $BANG           = q{!};
+	our $MSG_SEPARATOR  = q{,};
+	our $TIME_SEPARATOR = q{:};
+	our $PATH_SEPARATOR = q{/};
+
 	Readonly my $YEAR_OFFSET    = 1900;
 #----------------------------------------------------------------------------------#
 

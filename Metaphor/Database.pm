@@ -14,7 +14,6 @@ package Metaphor::Database;
 	use strict;
 	use warnings;
 	use DBI;
-	use Readonly;
 	use English qw(-no_match_vars);
 	use MIME::Base64;
 	use Metaphor::Config;
@@ -31,11 +30,12 @@ package Metaphor::Database;
 	our $DBHANDLES = {};
 	our @EXPORT    = qw(Fetch Execute);
 	our $CONFIG    = GetConfig()->{'database'};
+
 	our @ERRORS    = ();
 	our $DEFAULT   = 'default';
 
-	Readonly my $PARAM_SEPARATOR             = q{-};
-	Readonly my $CONNECTION_STRING_SEPARATOR = q{:};
+	our $PARAM_SEPARATOR             = q{-};
+	our $CONNECTION_STRING_SEPARATOR = q{:};
 #----------------------------------------------------------------------------------#
 
 

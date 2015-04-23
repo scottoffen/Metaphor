@@ -25,6 +25,7 @@ package Metaphor::Encryption;
 #----------------------------------------------------------------------------------#
 	our $VERSION = '1.0.0';
 	our @EXPORT  = qw(Encrypt Matches);
+	our $EMPTY   = q{};
 
 	our %EXPORT_TAGS =
 	(
@@ -34,7 +35,6 @@ package Metaphor::Encryption;
 	Readonly my $MIN_HASH_LENGTH = 13;
 	Readonly my $MIN_SALT_LENGTH = 15;
 	Readonly my $UNICODE_CHARSET = 256;
-	Readonly my $EMPTY      = q{};
 #----------------------------------------------------------------------------------#
 
 

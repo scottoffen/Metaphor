@@ -13,9 +13,9 @@ package Metaphor::Config;
 #----------------------------------------------------------------------------------#
 	use strict;
 	use warnings;
+	use Cwd qw(abs_path);
 	use English qw(-no_match_vars);
-	use Readonly;
-	use JSON::PP;
+	use JSON::MaybeXS;
 	use Try::Tiny;
 	use Metaphor::Util qw(Declassify);
 	use XML::Simple qw(:strict);
@@ -31,7 +31,7 @@ package Metaphor::Config;
 	our $CONFIG  = undef;
 	our $DEFAULT = "config.json";
 
-	Readonly my $FILE_PATH_SEPARATOR = q{/};
+	our $FILE_PATH_SEPARATOR = q{/};
 #----------------------------------------------------------------------------------#
 
 
@@ -67,7 +67,8 @@ sub LoadConfig
 		}
 		elsif ($file =~ /\.json$/mi)
 		{
-			return LoadJson($file);
+			my $json = LoadJson($file);
+			return $json;
 		}
 	}
 
@@ -105,14 +106,15 @@ sub LoadJson
 
 	try
 	{
-		return decode_json($data);
+		$data = decode_json($data);
 	}
 	catch
 	{
 		DEBUG("Error decoding JSON ($file) : $ERRNO");
+		$data = {};
 	};
 
-	return {};
+	return $data;
 }
 #########################################||#########################################
 
@@ -139,9 +141,9 @@ sub Locate
 
 	if ($file)
 	{
-		if (-e $file)
+		if (-e "./$file")
 		{
-			return $file;
+			return abs_path("./$file");
 		}
 		else
 		{
