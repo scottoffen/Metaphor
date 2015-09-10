@@ -1,5 +1,7 @@
 ![](https://raw.githubusercontent.com/scottoffen/Metaphor/master/metaphor.png)
 
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/scottoffen/Metaphor.svg)](http://isitmaintained.com/project/scottoffen/Metaphor "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/scottoffen/Metaphor.svg)](http://isitmaintained.com/project/scottoffen/Metaphor "Percentage of issues still open")
+
 *The documentation on the wiki is a bit out of date, I'll be working to update it over the next few weeks.*
 
 Metaphor is a collection of Perl modules that supports the development and maintenance of a [resource-oriented architecture](http://en.wikipedia.org/wiki/Resource-oriented_architecture) (ROA) via [RESTful interfaces](http://en.wikipedia.org/wiki/Representational_state_transfer).
